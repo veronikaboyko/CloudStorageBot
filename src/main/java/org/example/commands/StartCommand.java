@@ -3,35 +3,25 @@ package org.example.commands;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 /**
  * Команда /start.
  */
 public class StartCommand implements Command {
 
-    /**
-     * Метод для получения приветственного сообщения из файла.
-     * @return Строка, содержащая приветственное сообщение.
-     */
-    private String getStartMessage() {
-        String START_COMMAND_FILE = "src/main/resources/startCommandFile.txt";
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(START_COMMAND_FILE))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line).append("\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stringBuilder.toString();
-    }
+    private final String START_MESSAGE = "Привет! Это бот, который поможет Вам хранить," +
+            " создавать и просматривать файлы с расширениями .txt, .json, .xml.\n\n" +
+            "Доступны следующие команды:\n" +
+            "/help - Справка\n" +
+            "/create [Filename.расширение] – Создать новый файл\n" +
+            "/delete [File.расширение] – Удалить файл\n" +
+            "/listFiles – Посмотреть список файлов из хранилища\n" +
+            "/viewFileContent [File.расширение] - Просмотреть содержимое файла\n" +
+            "/editFile [File.расширение] - Редактировать содержимое файла\n" +
+            "/editFileName [File.расширение] - Переименовать файл";
+
     @Override
     public BotApiMethod handle(String messageFromUser, String chatId) {
-        String messageToSend = getStartMessage();
-        return new SendMessage(chatId, messageToSend);
+        return new SendMessage(chatId, START_MESSAGE);
     }
 }
