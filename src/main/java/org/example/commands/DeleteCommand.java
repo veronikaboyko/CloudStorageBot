@@ -12,17 +12,24 @@ import java.io.IOException;
  * Команда /delete.
  */
 public class DeleteCommand implements Command {
+    private ArgumentChecker argumentChecker;
+    private FileManager fileManager;
+
+    public DeleteCommand() {
+        argumentChecker = new ArgumentChecker();
+        fileManager = new FileManager();
+    }
 
     @Override
     public BotApiMethod handle(String messageFromUser, String chatId) {
 
-        if (!new ArgumentChecker().checkArguments(2, messageFromUser)) {
+        if (!argumentChecker.checkArguments(2, messageFromUser)) {
             return new SendMessage(chatId, "В качестве параметра укажите название файла.");
         }
 
         String fileName = messageFromUser.split("\\s+")[1];
         try {
-            new FileManager().deleteFile(fileName, chatId);
+            fileManager.deleteFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно удален.");
         } catch (IllegalArgumentException e) {
             e.printStackTrace();

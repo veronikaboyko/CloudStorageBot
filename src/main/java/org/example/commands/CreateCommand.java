@@ -11,16 +11,24 @@ import java.io.IOException;
  * Команда /create.
  */
 public class CreateCommand implements Command {
+    private ArgumentChecker argumentChecker;
+    private FileManager fileManager;
+
+    public CreateCommand() {
+        argumentChecker = new ArgumentChecker();
+        fileManager = new FileManager();
+    }
+
     @Override
     public BotApiMethod handle(String messageFromUser, String chatId) {
 
-        if (!new ArgumentChecker().checkArguments(2, messageFromUser)) {
+        if (!argumentChecker.checkArguments(2, messageFromUser)) {
             return new SendMessage(chatId, "В качестве параметра укажите название файла.");
         }
 
         String fileName = messageFromUser.split("\\s+")[1];
         try {
-            new FileManager().createFile(fileName, chatId);
+            fileManager.createFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно создан.");
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
