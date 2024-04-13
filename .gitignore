@@ -36,3 +36,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Telegram Bot ###
+/src/main/java/org/example/usersData/
