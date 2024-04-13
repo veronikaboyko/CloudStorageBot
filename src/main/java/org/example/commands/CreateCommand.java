@@ -11,8 +11,8 @@ import java.io.IOException;
  * Команда /create.
  */
 public class CreateCommand implements Command {
-    private ArgumentChecker argumentChecker;
-    private FileManager fileManager;
+    private final ArgumentChecker argumentChecker;
+    private final FileManager fileManager;
 
     public CreateCommand() {
         argumentChecker = new ArgumentChecker();

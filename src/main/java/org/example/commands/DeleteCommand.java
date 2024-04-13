@@ -12,8 +12,8 @@ import java.io.IOException;
  * Команда /delete.
  */
 public class DeleteCommand implements Command {
-    private ArgumentChecker argumentChecker;
-    private FileManager fileManager;
+    private final ArgumentChecker argumentChecker;
+    private final FileManager fileManager;
 
     public DeleteCommand() {
         argumentChecker = new ArgumentChecker();
