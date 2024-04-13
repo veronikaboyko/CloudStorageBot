@@ -11,11 +11,13 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 public class TelegramBot extends TelegramLongPollingBot {
     private final String botUsername;
     private final String botToken;
+    private final MessageHandler messageHandler;
 
 
     public TelegramBot(String botUsername, String botToken) {
         this.botUsername = botUsername;
         this.botToken = botToken;
+        this.messageHandler = new MessageHandler();
     }
 
 
@@ -33,7 +35,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         String messageFromUser = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
-        BotApiMethod messageToSend = new MessageHandler().handleUserMessage(messageFromUser, chatId);
+        BotApiMethod messageToSend = messageHandler.handleUserMessage(messageFromUser, chatId);
         send(messageToSend);
     }
 
