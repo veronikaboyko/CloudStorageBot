@@ -23,7 +23,7 @@ public class CreateCommand implements Command {
     public BotApiMethod handle(String messageFromUser, String chatId) {
 
         if (!argumentChecker.checkArguments(2, messageFromUser)) {
-            return new SendMessage(chatId, "В качестве параметра укажите название файла.");
+            return new SendMessage(chatId, argumentChecker.fileNameParameter);
         }
 
         String fileName = messageFromUser.split("\\s+")[1];

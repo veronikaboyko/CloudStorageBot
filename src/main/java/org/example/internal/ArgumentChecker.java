@@ -4,6 +4,7 @@ package org.example.internal;
  * Класс для проверки количества аргументов.
  */
 public class ArgumentChecker {
+    public final String fileNameParameter = "В качестве параметра укажите название файла.";
 
     /**
      * Метод для проверки количества параметров, введенных пользователем.
