@@ -1,6 +1,10 @@
 package org.example.bot;
 
 import org.example.commands.*;
+import org.example.commands.StatebleCommands.EditFileCommand;
+import org.example.commands.StatebleCommands.EditFileNameCommand;
+import org.example.commands.StatebleCommands.StatebleCommand;
+import org.example.commands.StatebleCommands.WriteToFileCommand;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -22,15 +26,15 @@ public class MessageHandler
 
 
     /**
-     * Map для отображения пользователь -> текущая команда, ассоциированная с ним
+     * Map для отображения пользователь -> текущая команда (хранящая состояние), ассоциированная с ним
      */
-    private Map<String, PartialCommand> userPartialCommands;
+    private final Map<String, StatebleCommand> userStatebleCommands;
 
 
     public MessageHandler()
     {
         registerCommands();
-        userPartialCommands = new HashMap<>();
+        userStatebleCommands = new HashMap<>();
     }
 
     /**
@@ -58,28 +62,39 @@ public class MessageHandler
      */
     public BotApiMethod handleUserMessage(String messageFromUser, String chatId)
     {
-        String key = messageFromUser.split("\\s+")[0];
-        BotApiMethod messageToSend;
-        if (commands.containsKey(key))
-        {
-            final Command userCommand = commands.get(key);
-            messageToSend = userCommand.handle(messageFromUser, chatId);
-            if (userCommand instanceof PartialCommand)
-            {
-                userPartialCommands.put(chatId, (PartialCommand) userCommand);
-            }
+        String[] messageParts = messageFromUser.split("\\s+");
+        String key = messageParts[0];
+        Command userCommand = commands.get(key);
 
-        } else
+        if (userCommand != null)
         {
-            final PartialCommand currentUserPartialCommand = userPartialCommands.get(chatId);
-            if (currentUserPartialCommand == null)
+            StatebleCommand currentUserStatebleCommand = userStatebleCommands.get(chatId);
+
+            if (currentUserStatebleCommand == null)
             {
-                messageToSend = new SendMessage(chatId, "Не понимаю вас. Команда /help для получения справки.");
+                userStatebleCommands.put(chatId, userCommand instanceof StatebleCommand ? (StatebleCommand) userCommand : null);
+                if (userCommand instanceof StatebleCommand)
+                    return userStatebleCommands.get(chatId).handle(messageFromUser, chatId);
             } else
             {
-                messageToSend = currentUserPartialCommand.handle(messageFromUser, chatId);
+                if (!currentUserStatebleCommand.onLastState())
+                    return currentUserStatebleCommand.handle(messageFromUser, chatId);
+                else
+                    userStatebleCommands.put(chatId, null);
             }
+            return userCommand.handle(messageFromUser, chatId);
+        } else
+        {
+            if (userStatebleCommands.get(chatId) != null)
+            {
+                BotApiMethod messageToSend = userStatebleCommands.get(chatId).handle(messageFromUser, chatId);
+                if (userStatebleCommands.get(chatId).onLastState())
+                {
+                    userStatebleCommands.put(chatId, null);
+                }
+                return messageToSend;
+            }
+            return new SendMessage(chatId, "Не понимаю вас. Команда /help для получения справки.");
         }
-        return messageToSend;
     }
 }
