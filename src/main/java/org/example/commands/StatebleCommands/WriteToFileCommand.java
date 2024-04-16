@@ -74,4 +74,11 @@ public class WriteToFileCommand implements StatebleCommand
     {
         return currentUserStatement == UserStatement.LAST_STATE;
     }
+
+    @Override
+    public void toStart()
+    {
+        currentUserStatement = UserStatement.STATE_1;
+        fileToWrite = null;
+    }
 }

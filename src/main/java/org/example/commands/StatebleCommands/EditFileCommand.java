@@ -26,7 +26,7 @@ public class EditFileCommand implements StatebleCommand
     @Override
     public BotApiMethod handle(String messageFromUser, String chatId)
     {
-        if (!argumentChecker.checkArguments(2, messageFromUser)&& currentUserStatement == UserStatement.STATE_1)
+        if (!argumentChecker.checkArguments(2, messageFromUser) && currentUserStatement == UserStatement.STATE_1)
         {
             return new SendMessage(chatId, argumentChecker.fileNameParameter);
         }
@@ -73,5 +73,12 @@ public class EditFileCommand implements StatebleCommand
     public boolean onLastState()
     {
         return currentUserStatement == UserStatement.LAST_STATE;
+    }
+
+    @Override
+    public void toStart()
+    {
+        currentUserStatement = UserStatement.STATE_1;
+        fileToEdit = null;
     }
 }

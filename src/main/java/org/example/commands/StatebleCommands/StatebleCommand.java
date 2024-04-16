@@ -12,4 +12,9 @@ public interface StatebleCommand extends Command
      * Провряет, что команда находится в заключительном состоянии
      */
     boolean onLastState();
+
+    /**
+     * Возвращает команду к первому состоянию
+     */
+    void toStart();
 }
