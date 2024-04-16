@@ -29,4 +29,40 @@ public class ArgumentCheckerTest {
         String message = "";
         assertFalse(argumentChecker.checkArguments(3, message));
     }
+
+    @Test
+    public void testIsCommandWithValidCommand() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertTrue(argumentChecker.isCommand("/help"));
+    }
+
+    @Test
+    public void testIsCommandWithInvalidCommand() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertFalse(argumentChecker.isCommand("/invalidCommand"));
+    }
+
+    @Test
+    public void testIsCommandWithEmptyString() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertFalse(argumentChecker.isCommand(""));
+    }
+
+    @Test
+    public void testIsCommandWithNull() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertFalse(argumentChecker.isCommand(null));
+    }
+
+    @Test
+    public void testIsCommandWithCommandAndAdditionalText() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertTrue(argumentChecker.isCommand("/create newfile.txt"));
+    }
+
+    @Test
+    public void testIsCommandWithCommandInDifferentCase() {
+        ArgumentChecker argumentChecker = new ArgumentChecker();
+        assertFalse(argumentChecker.isCommand("/VIEWFILECONTENT"));
+    }
 }

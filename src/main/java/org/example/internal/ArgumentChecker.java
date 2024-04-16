@@ -38,6 +38,8 @@ public class ArgumentChecker
      */
     public boolean isCommand(String userMessage)
     {
+        if (userMessage == null)
+            return false;
         final String potentialCommand = userMessage.split(" ")[0];
         return commands.contains(potentialCommand);
     }

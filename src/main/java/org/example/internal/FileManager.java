@@ -82,8 +82,12 @@ public class FileManager
      */
     public void editFileName(String oldName, String chatId, String newName) throws IOException
     {
-        new File(String.valueOf(Paths.get(getFileNameByID(chatId), oldName)))
+        boolean changed = new File(String.valueOf(Paths.get(getFileNameByID(chatId), oldName)))
                 .renameTo(new File(String.valueOf(Paths.get(getFileNameByID(chatId), newName))));
+        if (changed)
+            System.out.println("Название файла изменено");
+        else
+            System.out.println("Произошла ошибка в переименовывании");
     }
 
     private String getFileNameByID(String chatId)
