@@ -41,12 +41,12 @@ public class EditFileNameCommand implements StatebleCommand
             case STATE_1:
                 if (!fileManager.isValidFileName(fileName))
                 {
-                    forUser = new SendMessage(chatId, "Некорректное название файла!");
+                    forUser = new SendMessage(chatId, "Некорректное название файла");
                     break;
                 }
                 if (!fileManager.existsFile(fileName, chatId))
                 {
-                    forUser = new SendMessage(chatId, "Файла с таким названием не существует!");
+                    forUser = new SendMessage(chatId, "Файла с таким названием не существует");
                     break;
                 }
                 currentUserStatement = UserStatement.STATE_2;
@@ -56,7 +56,7 @@ public class EditFileNameCommand implements StatebleCommand
             case STATE_2:
                 if (!fileManager.isValidFileName(messageFromUser))
                 {
-                    forUser = new SendMessage(chatId, "Некорректное название файла!");
+                    forUser = new SendMessage(chatId, "Некорректное название файла");
                     break;
                 }
                 try

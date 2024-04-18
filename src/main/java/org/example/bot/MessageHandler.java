@@ -56,6 +56,7 @@ public class MessageHandler
         commands.put("/editFile", new EditFileCommand());
         commands.put("/editFileName", new EditFileNameCommand());
         commands.put("/listFiles", new ListFilesCommand());
+        commands.put("/viewFileContent", new ViewFileContentCommand());
     }
 
     /**

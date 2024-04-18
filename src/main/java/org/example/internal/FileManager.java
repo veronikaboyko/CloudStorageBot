@@ -2,11 +2,13 @@ package org.example.internal;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Scanner;
 
 /**
  * Класс, который отвечает за операции с файлами пользователя.
@@ -120,5 +122,24 @@ public class FileManager
         Files.write(Paths.get(getFileNameByID(chatId), fileToWrite), messageFromUser.getBytes(), StandardOpenOption.APPEND);
     }
 
+    public String getFileContent(String fileName,String chatId)
+    {
+        StringBuilder content = new StringBuilder();
+        try
+        {
+            File file = new File(String.valueOf(Paths.get(getFileNameByID(chatId), fileName)));
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine())
+            {
+                content.append(scanner.nextLine()).append("\n");
+            }
+            scanner.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            return "Файл не найден";
+        }
+        return content.toString();
+    }
 }
 

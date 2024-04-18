@@ -41,11 +41,11 @@ public class EditFileCommand implements StatebleCommand
             case STATE_1:
                 if (!fileManager.isValidFileName(fileName))
                 {
-                    return new SendMessage(chatId, "Некорректное название файла!");
+                    return new SendMessage(chatId, "Некорректное название файла");
                 }
                 if (!fileManager.existsFile(fileName, chatId))
                 {
-                    return new SendMessage(chatId, "Файла с таким названием не существует!");
+                    return new SendMessage(chatId, "Файла с таким названием не существует");
                 }
                 currentUserStatement = UserStatement.STATE_2;
                 fileToEdit = fileName;
