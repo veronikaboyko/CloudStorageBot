@@ -11,30 +11,38 @@ import java.io.IOException;
 /**
  * Команда /delete.
  */
-public class DeleteCommand implements Command {
+public class DeleteCommand implements Command
+{
     private final ArgumentChecker argumentChecker;
     private final FileManager fileManager;
 
-    public DeleteCommand() {
+    public DeleteCommand()
+    {
         argumentChecker = new ArgumentChecker();
         fileManager = new FileManager();
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId) {
+    public BotApiMethod handle(String messageFromUser, String chatId)
+    {
 
-        if (!argumentChecker.checkArguments(2, messageFromUser)) {
+        if (!argumentChecker.checkArguments(2, messageFromUser))
+        {
             return new SendMessage(chatId, argumentChecker.fileNameParameter);
         }
-
         String fileName = messageFromUser.split("\\s+")[1];
-        try {
+        try
+        {
             fileManager.deleteFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно удален.");
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e)
+        {
             e.printStackTrace();
             return new SendMessage(chatId, e.getMessage());
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
             return new SendMessage(chatId, "Не удалось удалить файл.");
         }
