@@ -41,12 +41,12 @@ public class WriteToFileCommand implements StatebleCommand
             case STATE_1:
                 if (!fileManager.isValidFileName(fileName))
                 {
-                    forUser = new SendMessage(chatId, "Некорректное название файла!");
+                    forUser = new SendMessage(chatId, "Некорректное название файла");
                     break;
                 }
                 if (!fileManager.existsFile(fileName, chatId))
                 {
-                    forUser = new SendMessage(chatId, "Сначала создайте этот файл!");
+                    forUser = new SendMessage(chatId, "Сначала создайте этот файл");
                     break;
                 }
                 currentUserStatement = UserStatement.STATE_2;
