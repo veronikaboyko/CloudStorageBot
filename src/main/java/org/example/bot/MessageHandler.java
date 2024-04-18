@@ -21,7 +21,7 @@ public class MessageHandler
 {
 
     /**
-     * Отображение Строка -> соответсвующая команда
+     * Отображение название команды -> обработчик
      */
     private Map<String, Command> commands;
 
@@ -32,10 +32,14 @@ public class MessageHandler
     private final Map<String, StatebleCommand> userStatebleCommands;
 
 
+    private final ArgumentChecker argumentChecker;
+
+
     public MessageHandler()
     {
         registerCommands();
         userStatebleCommands = new HashMap<>();
+        argumentChecker = new ArgumentChecker();
     }
 
     /**
@@ -63,7 +67,7 @@ public class MessageHandler
      */
     public BotApiMethod handleUserMessage(String messageFromUser, String chatId)
     {
-        if (new ArgumentChecker().isCommand(messageFromUser))
+        if (argumentChecker.isCommand(messageFromUser))
         {
             final Command command = commands.get(messageFromUser.split(" ")[0]);
             if (command instanceof StatebleCommand)
