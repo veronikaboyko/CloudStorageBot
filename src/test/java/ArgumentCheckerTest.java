@@ -4,8 +4,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
-import org.example.internal.ArgumentChecker;
-
 public class ArgumentCheckerTest {
     private ArgumentChecker argumentChecker;
     @Before
@@ -13,21 +11,21 @@ public class ArgumentCheckerTest {
         argumentChecker = new ArgumentChecker();
     }
     @Test
-    public void testCheckArgumentsWithCorrectCount() {
+    public void testCheckArgumentsCountWithCorrectCount() {
         String message = "command arg1 arg2";
-        assertTrue(argumentChecker.checkArguments(3, message));
+        assertTrue(argumentChecker.checkArgumentsCount(3, message));
     }
 
     @Test
-    public void testCheckArgumentsWithIncorrectCount() {
+    public void testCheckArgumentsCountWithIncorrectCount() {
         String message = "command arg1";
-        assertFalse(argumentChecker.checkArguments(3, message));
+        assertFalse(argumentChecker.checkArgumentsCount(3, message));
     }
 
     @Test
-    public void testCheckArgumentsWithEmptyMessage() {
+    public void testCheckArgumentsCountWithEmptyMessage() {
         String message = "";
-        assertFalse(argumentChecker.checkArguments(3, message));
+        assertFalse(argumentChecker.checkArgumentsCount(3, message));
     }
 
     @Test

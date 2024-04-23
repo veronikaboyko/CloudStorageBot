@@ -23,6 +23,14 @@ public class ConstantManager
      * Директория, где лежат директории по каждому пользователю
      */
     public static final String USER_DATA_DIRECTORY = "src/main/java/org/example/usersData/";
+
+    /**
+     * Когда не найдены файлы пользователя
+     */
     public static final String NO_USER_FILES_FOUND = "У вас пока что нет файлов." +
             " Используйте команду /help, чтобы узнать, как работать с ботом";
+    /**
+     * Когда в параметр не передано имя файла
+     */
+    public static final String NO_FILE_NAME_FOUND = "В качестве параметра укажите название файла.";
 }

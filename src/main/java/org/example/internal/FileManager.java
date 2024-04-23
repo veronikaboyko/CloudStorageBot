@@ -45,11 +45,11 @@ public class FileManager
         Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
         if (!fileName.endsWith(".txt") && !fileName.endsWith(".json") && !fileName.endsWith(".xml"))
         {
-            throw new IllegalArgumentException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
+            throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
         }
         if (Files.exists(filePath))
         {
-            throw new IllegalArgumentException("Файл с таким именем уже существует.");
+            throw new IOException("Файл с таким именем уже существует.");
         }
         Files.createFile(filePath);
     }
@@ -66,7 +66,7 @@ public class FileManager
         Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
         if (!Files.exists(filePath))
         {
-            throw new IllegalArgumentException("Файл с таким именем не существует.");
+            throw new IOException("Файл с таким именем не существует.");
         }
         Files.delete(filePath);
     }
@@ -122,7 +122,7 @@ public class FileManager
         Files.write(Paths.get(getFileNameByID(chatId), fileToWrite), messageFromUser.getBytes(), StandardOpenOption.APPEND);
     }
 
-    public String getFileContent(String fileName,String chatId)
+    public String getFileContent(String fileName, String chatId) throws FileNotFoundException
     {
         StringBuilder content = new StringBuilder();
         try
@@ -137,7 +137,7 @@ public class FileManager
         }
         catch (FileNotFoundException e)
         {
-            return "Файл не найден";
+            throw new FileNotFoundException("Файл не найден!");
         }
         return content.toString();
     }

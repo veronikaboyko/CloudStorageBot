@@ -1,6 +1,7 @@
 package org.example.commands;
 
 import org.example.internal.ConstantManager;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -8,14 +9,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 /**
  * Команда /start.
  */
-public class StartCommand implements Command
+public class StartCommand extends AbstractCommand implements OneStateCommand
 {
-
-    private final String START_MESSAGE = ConstantManager.HELP_MESSAGE;
-
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId)
+    public BotApiMethod handle(String messageFromUser, String chatId, State state)
     {
-        return new SendMessage(chatId, START_MESSAGE);
+        return new SendMessage(chatId, ConstantManager.HELP_MESSAGE);
     }
 }

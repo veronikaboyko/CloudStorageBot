@@ -1,20 +1,16 @@
 package org.example.commands;
 
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 
+import java.io.IOException;
 
 /**
- * Интерфейс для определения команд, обрабатывающих сообщения пользователя.
+ * Интерфейс маркер для определения команд, обрабатывающих сообщения пользователя.
+ * Служит для объекдинения команд, которые работают отталкиваясь от состояния
+ * и обычных команд
  */
-public interface Command {
-
-    /**
-     * Метод для обработки команды пользователя.
-     *
-     * @param messageFromUser Сообщение от пользователя.
-     * @param chatId          ID чата.
-     * @return Объект, который нужно отправить пользователю (текстовое сообщение, документ и т.д.).
-     */
-    BotApiMethod handle(String messageFromUser, String chatId);
-
+public interface Command
+{
+    BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException;
 }
