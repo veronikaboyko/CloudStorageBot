@@ -9,6 +9,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+
+/**
+ * Просмтореть содержимое файла
+ */
 public class ViewFileContentCommand extends AbstractCommand implements OneStateCommand
 {
     private final FileManager fileManager;
