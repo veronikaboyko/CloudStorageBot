@@ -63,7 +63,7 @@ public class EditFileNameCommand extends AbstractCommand implements TwoStateComm
                 }
                 catch (IOException exception)
                 {
-                    throw new IOException("Ошибка при работе с файлом.");
+                    throw new IOException(exception.getMessage());
                 }
             }
             default -> throw new IOException("Ни одного корректного состояние не было передано");

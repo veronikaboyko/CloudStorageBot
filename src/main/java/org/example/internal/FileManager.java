@@ -86,10 +86,11 @@ public class FileManager
     {
         boolean changed = new File(String.valueOf(Paths.get(getFileNameByID(chatId), oldName)))
                 .renameTo(new File(String.valueOf(Paths.get(getFileNameByID(chatId), newName))));
+        if (existsFile(newName, chatId))
+            throw new IOException("Файл с таким названием уже существует");
         if (changed)
-            System.out.println("Название файла изменено");
-        else
-            System.out.println("Произошла ошибка в переименовывании");
+            throw new IOException("Название файла изменено");
+
     }
 
     private String getFileNameByID(String chatId)
