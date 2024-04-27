@@ -1,7 +1,8 @@
 package org.example.commands;
 
-import org.example.internal.ArgumentChecker;
+import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -10,32 +11,32 @@ import java.io.IOException;
 /**
  * Команда /create.
  */
-public class CreateCommand implements Command {
-    private final ArgumentChecker argumentChecker;
+public class CreateCommand extends AbstractCommand implements OneStateCommand
+{
     private final FileManager fileManager;
 
-    public CreateCommand() {
-        argumentChecker = new ArgumentChecker();
+    public CreateCommand()
+    {
         fileManager = new FileManager();
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId) {
-
-        if (!argumentChecker.checkArguments(2, messageFromUser)) {
-            return new SendMessage(chatId, argumentChecker.fileNameParameter);
+    public BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException
+    {
+        if (!checkArgumentsCount(2, messageFromUser))
+        {
+            throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
         }
-
-        String fileName = messageFromUser.split("\\s+")[1];
-        try {
+        final String fileName = messageFromUser.split("\\s+")[1];
+        try
+        {
             fileManager.createFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно создан.");
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
-            return new SendMessage(chatId, e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new SendMessage(chatId, "Не удалось создать файл.");
+            throw new IOException(e.getMessage());
         }
     }
 }

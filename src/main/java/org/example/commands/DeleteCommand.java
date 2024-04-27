@@ -1,9 +1,10 @@
 package org.example.commands;
 
+import org.example.internal.ConstantManager;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import org.example.internal.ArgumentChecker;
 import org.example.internal.FileManager;
 
 import java.io.IOException;
@@ -11,32 +12,33 @@ import java.io.IOException;
 /**
  * Команда /delete.
  */
-public class DeleteCommand implements Command {
-    private final ArgumentChecker argumentChecker;
+public class DeleteCommand extends AbstractCommand implements OneStateCommand
+{
     private final FileManager fileManager;
 
-    public DeleteCommand() {
-        argumentChecker = new ArgumentChecker();
+    public DeleteCommand()
+    {
         fileManager = new FileManager();
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId) {
+    public BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException
+    {
 
-        if (!argumentChecker.checkArguments(2, messageFromUser)) {
-            return new SendMessage(chatId, argumentChecker.fileNameParameter);
+        if (!checkArgumentsCount(2, messageFromUser))
+        {
+            throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
         }
-
-        String fileName = messageFromUser.split("\\s+")[1];
-        try {
+        final String fileName = messageFromUser.split("\\s+")[1];
+        try
+        {
             fileManager.deleteFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно удален.");
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
-            return new SendMessage(chatId, e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new SendMessage(chatId, "Не удалось удалить файл.");
+            throw new IOException("Ошибка при работе с файлом!");
         }
     }
 }
