@@ -1,14 +1,15 @@
 package org.example.bot;
 
+import org.example.state.CommandWithState;
+import org.example.state.State;
 import org.example.commands.*;
-import org.example.commands.StatebleCommands.EditFileCommand;
-import org.example.commands.StatebleCommands.EditFileNameCommand;
-import org.example.commands.StatebleCommands.StatebleCommand;
-import org.example.commands.StatebleCommands.WriteToFileCommand;
-import org.example.internal.ArgumentChecker;
+import org.example.commands.stateful.EditFileCommand;
+import org.example.commands.stateful.EditFileNameCommand;
+import org.example.commands.stateful.WriteToFileCommand;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,25 +22,19 @@ public class MessageHandler
 {
 
     /**
-     * Отображение название команды -> обработчик
+     * Отображение название команды -> сама команда
      */
-    private Map<String, Command> commands;
-
+    private Map<String, AbstractCommand> commands;
 
     /**
-     * Map для отображения пользователь -> текущая команда (хранящая состояние), ассоциированная с ним
+     * Отображение пользователь -> текущая команда с сотоянием
      */
-    private final Map<String, StatebleCommand> userStatebleCommands;
-
-
-    private final ArgumentChecker argumentChecker;
-
+    private final Map<String, CommandWithState> usersCommand;
 
     public MessageHandler()
     {
         registerCommands();
-        userStatebleCommands = new HashMap<>();
-        argumentChecker = new ArgumentChecker();
+        usersCommand = new HashMap<>();
     }
 
     /**
@@ -68,31 +63,57 @@ public class MessageHandler
      */
     public BotApiMethod handleUserMessage(String messageFromUser, String chatId)
     {
-        if (argumentChecker.isCommand(messageFromUser))
+        final String potentialCommand = messageFromUser.split(" ")[0];
+        try
         {
-            final Command command = commands.get(messageFromUser.split(" ")[0]);
-            if (command instanceof StatebleCommand)
+            if (isCommand(potentialCommand))
             {
-                if (userStatebleCommands.get(chatId) == command)
-                    ((StatebleCommand) command).toStart();
-                userStatebleCommands.put(chatId, (StatebleCommand) command);
-            }
-            return command.handle(messageFromUser, chatId);
-        } else
-        {
-            final StatebleCommand currentStatebleCommand = userStatebleCommands.get(chatId);
-            if (currentStatebleCommand == null)
-                return new SendMessage(chatId, "Не понимаю вас. Команда /help для получения справки.");
-            else
+                usersCommand.put(chatId, new CommandWithState(potentialCommand,State.GOT_COMMAND_FROM_USER));
+                final AbstractCommand command = commands.get(potentialCommand);
+                BotApiMethod botApiMethod = command.handle(messageFromUser, chatId, State.GOT_COMMAND_FROM_USER);
+                if (command instanceof OneStateCommand)
+                    usersCommand.remove(chatId);
+                return botApiMethod;
+            } else
             {
-                BotApiMethod forUser = currentStatebleCommand.handle(messageFromUser, chatId);
-                if (currentStatebleCommand.onLastState())
+                if (!usersCommand.containsKey(chatId))
+                    return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту!");
+                else
                 {
-                    userStatebleCommands.put(chatId, null);
-                    currentStatebleCommand.toStart(); //откатываем к первоначальному состоянию
+                    final AbstractCommand command = commands.get(usersCommand.get(chatId).getCurrentCommand());
+                    final String currentUserCommand = usersCommand.get(chatId).getCurrentCommand();
+                    final State currentUserState = usersCommand.get(chatId).currentState;
+                    BotApiMethod botApiMethod = null;
+                    switch (currentUserState)
+                    {
+                        case GOT_COMMAND_FROM_USER ->
+                        {
+                            botApiMethod = commands.get(currentUserCommand).handle(messageFromUser, chatId, State.GOT_DATA_FROM_USER);
+                            usersCommand.get(chatId).currentState = State.GOT_DATA_FROM_USER;
+                            if (command instanceof TwoStateCommand)
+                                usersCommand.remove(chatId);
+                        }
+                        //а тут могут быть кейсы, если команда может хранить 3,4,5 и тд состояний.
+                    }
+                    return botApiMethod;
                 }
-                return forUser;
             }
         }
+        catch (IOException exception)
+        {
+            return new SendMessage(chatId, exception.getMessage());
+        }
+    }
+
+    /**
+     * Проверяет, является ли сообщение от пользователя командой
+     *
+     * @param potentialCommand - пользовательская строка
+     */
+    public boolean isCommand(String potentialCommand)
+    {
+        if (potentialCommand == null)
+            return false;
+        return commands.containsKey(potentialCommand);
     }
 }

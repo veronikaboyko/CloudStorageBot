@@ -1,39 +1,55 @@
 package org.example.commands;
 
-import org.example.internal.ArgumentChecker;
+import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-public class ViewFileContentCommand implements Command
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+
+/**
+ * Просмтореть содержимое файла
+ */
+public class ViewFileContentCommand extends AbstractCommand implements OneStateCommand
 {
     private final FileManager fileManager;
-    private final ArgumentChecker argumentChecker;
 
     public ViewFileContentCommand()
     {
         fileManager = new FileManager();
-        argumentChecker = new ArgumentChecker();
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId)
+    public BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException
     {
-        if (!argumentChecker.checkArguments(2, messageFromUser))
+        if (!checkArgumentsCount(2, messageFromUser))
         {
-            return new SendMessage(chatId, argumentChecker.fileNameParameter);
+            throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
         }
-
-        String fileName = messageFromUser.split("\\s+")[1];
+        final String fileName = messageFromUser.split("\\s+")[1];
         if (!fileManager.isValidFileName(fileName))
         {
-            return new SendMessage(chatId, "Некорректное название файла!");
+            throw new IOException("Некорректное название файла!");
         }
         if (!fileManager.existsFile(fileName, chatId))
         {
-            return new SendMessage(chatId, "Файла с таким названием не существует!");
+            throw new IOException("Файла с таким названием не существует!");
         }
-        return new SendMessage(chatId,fileManager.getFileContent(fileName,chatId));
+        try
+        {
+            final String fileContent = fileManager.getFileContent(fileName, chatId);
+            if (!fileContent.isEmpty())
+                return new SendMessage(chatId, fileContent);
+            else
+                return new SendMessage(chatId, "Файл пуст!");
+        }
+        catch (FileNotFoundException ex)
+        {
+            ex.printStackTrace();
+            throw new IOException("Внутрення ошибка при работе с файлом!");
+        }
     }
-
 }

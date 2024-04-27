@@ -28,20 +28,37 @@ public class FileManagerTest
         fileManager = new FileManager();
     }
 
+    /**
+     * Тестирует создание нового файла.
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test
     public void testCreateFile() throws IOException
     {
+
         fileManager.createFile("testCreateFile.txt", TEST_CHAT_ID);
         Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID, "testCreateFile.txt");
         assertTrue(Files.exists(filePath));
+        fileManager.deleteFile("testCreateFile.txt", TEST_CHAT_ID);
     }
 
+    /**
+     * Тестирует создание файла с недопустимым расширением.
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testCreateFileWithInvalidExtension() throws IOException
     {
         fileManager.createFile("testFile.jpg", TEST_CHAT_ID);
     }
 
+    /**
+     * Тестирует создание файла, который уже существует.
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testCreateFileThatAlreadyExists() throws IOException
     {
@@ -49,6 +66,11 @@ public class FileManagerTest
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
     }
 
+    /**
+     * Тестирует удаление файла (проверка на существование после удаления).
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test
     public void testDeleteFile() throws IOException
     {
@@ -60,14 +82,24 @@ public class FileManagerTest
         assertFalse(Files.exists(filePath));
     }
 
+    /**
+     * Тестирует удаление файла, который не существует.
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test(expected = IllegalArgumentException.class)
-    public void testDeleteFileThatAlreadyExists() throws IOException
+    public void testDeleteFileThatDoesNotAlreadyExists() throws IOException
     {
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
         fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
         fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
     }
 
+    /**
+     * Тестирует редактирование содержимого файла (проверка, что добавленная в файл строка действительно дописалась).
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test(expected = NoSuchFileException.class)
     public void testEditFile() throws IOException
     {
@@ -77,6 +109,11 @@ public class FileManagerTest
         assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(newText));
     }
 
+    /**
+     * Тестирует изменение имени файла.
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test
     public void testEditFileName() throws IOException
     {
@@ -86,6 +123,9 @@ public class FileManagerTest
         assertFalse(Files.exists(getFilePath(TEST_FILE_NAME)));
     }
 
+    /**
+     * Тестирует проверку существования файла.
+     */
     @Test
     public void testExistsFile()
     {
@@ -93,6 +133,9 @@ public class FileManagerTest
         assertFalse(fileManager.existsFile(TEST_FILE_NAME, TEST_CHAT_ID2));
     }
 
+    /**
+     * Тестирует валидацию имени файла с допустимым именем.
+     */
     @Test
     public void testIsValidFileNameWithValidName()
     {
@@ -100,6 +143,9 @@ public class FileManagerTest
         assertTrue(fileManager.isValidFileName("test.txt"));
     }
 
+    /**
+     * Тестирует валидацию имени файла с недопустимым именем.
+     */
     @Test
     public void testIsValidFileNameWithInvalidName()
     {
@@ -107,6 +153,11 @@ public class FileManagerTest
         assertFalse(fileManager.isValidFileName("test.jpg"));
     }
 
+    /**
+     * Тестирует запись в файл (что существует дописанная в файл строка).
+     *
+     * @throws IOException если происходит ошибка ввода-вывода
+     */
     @Test(expected = NoSuchFileException.class)
     public void testWriteToFile() throws IOException
     {
@@ -116,9 +167,15 @@ public class FileManagerTest
         assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(message));
     }
 
+    /**
+     * Вспомогательный метод для получения пути файла на основе его имени.
+     *
+     * @param fileName имя файла
+     * @return путь к файлу
+     */
     private Path getFilePath(String fileName)
     {
-        return Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + FileManagerTest.TEST_CHAT_ID2, fileName);
+        return Paths.get(ConstantManager.USER_DATA_DIRECTORY + FileManagerTest.TEST_CHAT_ID2, fileName);
     }
 
 }
