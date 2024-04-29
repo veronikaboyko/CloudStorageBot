@@ -1,4 +1,4 @@
-package org.example.commands;
+package org.example.command;
 
 import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -12,5 +12,5 @@ import java.io.IOException;
  */
 public interface Command
 {
-    BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException;
+    BotApiMethod<?> handle(String messageFromUser, String chatId, State state) throws IOException;
 }

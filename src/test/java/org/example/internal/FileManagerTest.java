@@ -1,4 +1,5 @@
-import org.example.internal.ConstantManager;
+package org.example.internal;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,10 +9,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
-import org.example.internal.FileManager;
+import static org.junit.Assert.*;
 
 public class FileManagerTest
 {
@@ -48,10 +46,11 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCreateFileWithInvalidExtension() throws IOException
     {
-        fileManager.createFile("testFile.jpg", TEST_CHAT_ID);
+        IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.jpg", TEST_CHAT_ID));
+        assertTrue(exception.getMessage().contains("Неверное расширение файла. Допустимые расширения: txt, json, xml."));
     }
 
     /**
@@ -59,11 +58,12 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCreateFileThatAlreadyExists() throws IOException
     {
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
-        fileManager.createFile("testFile.txt", TEST_CHAT_ID);
+        IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.txt", TEST_CHAT_ID));
+        assertTrue(exception.getMessage().contains("Файл с таким именем уже существует."));
     }
 
     /**
@@ -76,7 +76,7 @@ public class FileManagerTest
     {
         fileManager.createFile("testDeleteFile.txt", TEST_CHAT_ID);
         Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID,
-                "testDeleteFile.txt");
+                                  "testDeleteFile.txt");
         assertTrue(Files.exists(filePath));
         fileManager.deleteFile("testDeleteFile.txt", TEST_CHAT_ID);
         assertFalse(Files.exists(filePath));
@@ -87,12 +87,13 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testDeleteFileThatDoesNotAlreadyExists() throws IOException
     {
-        fileManager.createFile("testFile.txt", TEST_CHAT_ID);
-        fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
-        fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
+        fileManager.createFile("testDelFile.txt", TEST_CHAT_ID);
+        fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID);
+        IOException exception = assertThrows(IOException.class, () -> fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID));
+        assertTrue(exception.getMessage().contains("Файл с таким именем не существует."));
     }
 
     /**
