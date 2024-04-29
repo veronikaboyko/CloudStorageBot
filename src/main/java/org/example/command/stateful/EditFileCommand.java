@@ -1,12 +1,13 @@
-package org.example.commands.stateful;
+package org.example.command.stateful;
 
-import org.example.commands.AbstractCommand;
-import org.example.commands.TwoStateCommand;
+import org.example.command.AbstractCommand;
+import org.example.command.TwoStateCommand;
 import org.example.internal.ConstantManager;
 import org.example.state.State;
 import org.example.internal.FileManager;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -24,38 +25,30 @@ public class EditFileCommand extends AbstractCommand implements TwoStateCommand
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException
+    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
-        switch (state)
-        {
-            case GOT_COMMAND_FROM_USER ->
-            {
-                if (!checkArgumentsCount(2, messageFromUser))
-                {
+        switch (state) {
+            case GOT_COMMAND_FROM_USER -> {
+                String[] arguments = messageFromUser.split("\\s+");
+                if (!checkArgumentsCount(2, arguments)) {
                     throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
                 }
-                final String fileName = messageFromUser.split("\\s+")[1];
-                if (!fileManager.isValidFileName(fileName))
-                {
+                final String fileName = arguments[1];
+                if (!fileManager.isValidFileName(fileName)) {
                     throw new IOException("Некорректное название файла");
                 }
-                if (!fileManager.existsFile(fileName, chatId))
-                {
+                if (!fileManager.existsFile(fileName, chatId)) {
                     throw new IOException("Файла с таким названием не существует");
                 }
                 fileNamesCasher.add(chatId, fileName);
                 return new SendMessage(chatId, "Введите новое содержимое файла.");
             }
-            case GOT_DATA_FROM_USER ->
-            {
-                try
-                {
+            case GOT_DATA_FROM_USER -> {
+                try {
                     fileManager.editFile(fileNamesCasher.getData(chatId), chatId, messageFromUser);
                     fileNamesCasher.clearUserCash(chatId);
                     return new SendMessage(chatId, "Файл успешно сохранен.");
-                }
-                catch (IOException exception)
-                {
+                } catch (IOException exception) {
                     throw new IOException("Ошибка при работе с файлом.");
                 }
             }

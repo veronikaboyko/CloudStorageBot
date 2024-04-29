@@ -1,4 +1,4 @@
-package org.example.commands.stateful;
+package org.example.command.stateful;
 
 public class EditFileNameCommandTest
 {

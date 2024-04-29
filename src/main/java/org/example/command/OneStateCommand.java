@@ -1,4 +1,4 @@
-package org.example.commands;
+package org.example.command;
 
 /**
  * Марирует команды, работающие только в одном состоянии

@@ -1,4 +1,4 @@
-package org.example.commands;
+package org.example.command;
 
 import org.example.internal.ConstantManager;
 import org.example.state.State;
@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import org.example.internal.FileManager;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -22,23 +23,20 @@ public class DeleteCommand extends AbstractCommand implements OneStateCommand
     }
 
     @Override
-    public BotApiMethod handle(String messageFromUser, String chatId, State state) throws IOException
+    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
+        String[] arguments = messageFromUser.split("\\s+");
 
-        if (!checkArgumentsCount(2, messageFromUser))
-        {
+        if (!checkArgumentsCount(2, arguments)) {
             throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
         }
-        final String fileName = messageFromUser.split("\\s+")[1];
-        try
-        {
+        final String fileName = arguments[1];
+        try {
             fileManager.deleteFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно удален.");
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            throw new IOException("Ошибка при работе с файлом!");
+        } catch (IOException e) {
+            System.out.println("Не удалось удалить файл. " + e.getMessage());
+            throw new IOException(e.getMessage());
         }
     }
 }
