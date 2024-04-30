@@ -2,10 +2,10 @@ package org.example.bot;
 
 import org.example.state.CommandWithState;
 import org.example.state.State;
-import org.example.commands.*;
-import org.example.commands.stateful.EditFileCommand;
-import org.example.commands.stateful.EditFileNameCommand;
-import org.example.commands.stateful.WriteToFileCommand;
+import org.example.command.*;
+import org.example.command.stateful.EditFileCommand;
+import org.example.command.stateful.EditFileNameCommand;
+import org.example.command.stateful.WriteToFileCommand;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -61,33 +61,27 @@ public class MessageHandler
      * @param chatId          ID чата.
      * @return Объект, который нужно отправить.
      */
-    public BotApiMethod handleUserMessage(String messageFromUser, String chatId)
+    public BotApiMethod<?> handleUserMessage(String messageFromUser, String chatId)
     {
         final String potentialCommand = messageFromUser.split(" ")[0];
-        try
-        {
-            if (isCommand(potentialCommand))
-            {
-                usersCommand.put(chatId, new CommandWithState(potentialCommand,State.GOT_COMMAND_FROM_USER));
+        try {
+            if (isCommand(potentialCommand)) {
+                usersCommand.put(chatId, new CommandWithState(potentialCommand, State.GOT_COMMAND_FROM_USER));
                 final AbstractCommand command = commands.get(potentialCommand);
-                BotApiMethod botApiMethod = command.handle(messageFromUser, chatId, State.GOT_COMMAND_FROM_USER);
+                BotApiMethod<?> botApiMethod = command.handle(messageFromUser, chatId, State.GOT_COMMAND_FROM_USER);
                 if (command instanceof OneStateCommand)
                     usersCommand.remove(chatId);
                 return botApiMethod;
-            } else
-            {
+            } else {
                 if (!usersCommand.containsKey(chatId))
-                    return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту!");
-                else
-                {
+                    return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту.");
+                else {
                     final AbstractCommand command = commands.get(usersCommand.get(chatId).getCurrentCommand());
                     final String currentUserCommand = usersCommand.get(chatId).getCurrentCommand();
                     final State currentUserState = usersCommand.get(chatId).currentState;
-                    BotApiMethod botApiMethod = null;
-                    switch (currentUserState)
-                    {
-                        case GOT_COMMAND_FROM_USER ->
-                        {
+                    BotApiMethod<?> botApiMethod = null;
+                    switch (currentUserState) {
+                        case GOT_COMMAND_FROM_USER -> {
                             botApiMethod = commands.get(currentUserCommand).handle(messageFromUser, chatId, State.GOT_DATA_FROM_USER);
                             usersCommand.get(chatId).currentState = State.GOT_DATA_FROM_USER;
                             if (command instanceof TwoStateCommand)
@@ -98,9 +92,7 @@ public class MessageHandler
                     return botApiMethod;
                 }
             }
-        }
-        catch (IOException exception)
-        {
+        } catch (IOException exception) {
             return new SendMessage(chatId, exception.getMessage());
         }
     }

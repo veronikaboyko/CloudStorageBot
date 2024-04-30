@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * Класс, который отвечает за операции с файлами пользователя.
@@ -16,6 +17,9 @@ import java.util.Scanner;
 public class FileManager
 {
     private final String USER_DATA_DIRECTORY = ConstantManager.USER_DATA_DIRECTORY;
+
+    private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
+
 
     /**
      * Метод для создания директории пользователя, в которой будут храниться его личные файлы.
@@ -26,8 +30,7 @@ public class FileManager
     private void createUserDir(String chatId) throws IOException
     {
         Path directoryPath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId);
-        if (!Files.exists(directoryPath))
-        {
+        if (!Files.exists(directoryPath)) {
             Files.createDirectories(directoryPath);
         }
     }
@@ -43,12 +46,11 @@ public class FileManager
     {
         createUserDir(chatId);
         Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
-        if (!fileName.endsWith(".txt") && !fileName.endsWith(".json") && !fileName.endsWith(".xml"))
-        {
+
+        if (!isValidFileName(fileName)) {
             throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
         }
-        if (Files.exists(filePath))
-        {
+        if (Files.exists(filePath)) {
             throw new IOException("Файл с таким именем уже существует.");
         }
         Files.createFile(filePath);
@@ -64,8 +66,7 @@ public class FileManager
     public void deleteFile(String fileName, String chatId) throws IOException
     {
         Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
-        if (!Files.exists(filePath))
-        {
+        if (!Files.exists(filePath)) {
             throw new IOException("Файл с таким именем не существует.");
         }
         Files.delete(filePath);
@@ -84,13 +85,8 @@ public class FileManager
      */
     public void editFileName(String oldName, String chatId, String newName) throws IOException
     {
-        boolean changed = new File(String.valueOf(Paths.get(getFileNameByID(chatId), oldName)))
-                .renameTo(new File(String.valueOf(Paths.get(getFileNameByID(chatId), newName))));
-        if (existsFile(newName, chatId))
-            throw new IOException("Файл с таким названием уже существует");
-        if (changed)
-            throw new IOException("Название файла изменено");
-
+        String curr_user_directory = String.valueOf(Paths.get(getFileNameByID(chatId)));
+        boolean changed = new File(curr_user_directory, oldName).renameTo(new File(curr_user_directory, newName));
     }
 
     private String getFileNameByID(String chatId)
@@ -108,11 +104,12 @@ public class FileManager
     }
 
     /**
-     * Проверяет, что валидно название файла
+     * Проверяет, что валидно название файла (что у файла допустимое расширение)
      */
     public boolean isValidFileName(String fileName)
     {
-        return fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".xml");
+        String fileExtension = getFileExtension(fileName);
+        return ALLOWED_EXTENSIONS.contains(fileExtension);
     }
 
     /**
@@ -126,21 +123,58 @@ public class FileManager
     public String getFileContent(String fileName, String chatId) throws FileNotFoundException
     {
         StringBuilder content = new StringBuilder();
-        try
-        {
+        try {
             File file = new File(String.valueOf(Paths.get(getFileNameByID(chatId), fileName)));
             Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine())
-            {
+            while (scanner.hasNextLine()) {
                 content.append(scanner.nextLine()).append("\n");
             }
             scanner.close();
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             throw new FileNotFoundException("Файл не найден!");
         }
         return content.toString();
+    }
+
+    /**
+     * Получить расширение файла
+     *
+     * @param fileName Имя файла
+     * @return Расширение
+     */
+    private String getFileExtension(String fileName)
+    {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1 || dotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dotIndex);
+    }
+
+    /**
+     * Возвращает список файлов пользователя
+     *
+     * @param chatId Идентификатор пользователя
+     * @return Список всех файлов пользователя в виде строки
+     */
+    public String getListFiles(final String chatId) throws IOException
+    {
+        final StringBuilder userFileList = new StringBuilder();
+        File currentUserDirectory = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId);
+        if (currentUserDirectory.isDirectory()) {
+            File[] files = currentUserDirectory.listFiles();
+            if (files == null) {
+                throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
+            }
+            for (File file : files) {
+                if (file.isFile()) {
+                    userFileList.append(file.getName()).append("\n");
+                }
+            }
+            return userFileList.toString();
+        } else {
+            throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
+        }
     }
 }
 
