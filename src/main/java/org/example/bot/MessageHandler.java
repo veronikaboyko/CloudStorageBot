@@ -1,11 +1,11 @@
 package org.example.bot;
 
-import org.example.state.CommandWithState;
-import org.example.state.State;
 import org.example.command.*;
 import org.example.command.stateful.EditFileCommand;
 import org.example.command.stateful.EditFileNameCommand;
 import org.example.command.stateful.WriteToFileCommand;
+import org.example.state.CommandWithState;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
