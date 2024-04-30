@@ -23,7 +23,7 @@ public class ConstantManager
      * Директория, где лежат директории по каждому пользователю
      */
     public static final String USER_DATA_DIRECTORY = "src/main/java/org/example/usersData/";
-
+    //System.getProperty(user.home)+"/CloudBot"?
     /**
      * Когда не найдены файлы пользователя
      */
@@ -33,4 +33,9 @@ public class ConstantManager
      * Когда в параметр не передано имя файла
      */
     public static final String NO_FILE_NAME_FOUND = "В качестве параметра укажите название файла.";
+    /**
+     * Внутренняя ошибка бота - когда передается состояние которого не существует
+     */
+    public static final String BOT_BROKEN_INSIDE_MESSAGE = "Внутрення ошибка телеграм-бота." +
+            " Если это сообщение возникло, напишите нам на почту: cloud_bot@yandex.ru";
 }

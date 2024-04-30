@@ -46,7 +46,7 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test()
+    @Test
     public void testCreateFileWithInvalidExtension() throws IOException
     {
         IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.jpg", TEST_CHAT_ID));
@@ -58,7 +58,7 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test()
+    @Test
     public void testCreateFileThatAlreadyExists() throws IOException
     {
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
@@ -76,7 +76,7 @@ public class FileManagerTest
     {
         fileManager.createFile("testDeleteFile.txt", TEST_CHAT_ID);
         Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID,
-                                  "testDeleteFile.txt");
+                "testDeleteFile.txt");
         assertTrue(Files.exists(filePath));
         fileManager.deleteFile("testDeleteFile.txt", TEST_CHAT_ID);
         assertFalse(Files.exists(filePath));
@@ -87,7 +87,7 @@ public class FileManagerTest
      *
      * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test()
+    @Test
     public void testDeleteFileThatDoesNotAlreadyExists() throws IOException
     {
         fileManager.createFile("testDelFile.txt", TEST_CHAT_ID);

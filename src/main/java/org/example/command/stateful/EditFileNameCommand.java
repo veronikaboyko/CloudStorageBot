@@ -1,12 +1,14 @@
-package org.example.commands.stateful;
+package org.example.command.stateful;
 
-import org.example.commands.AbstractCommand;
-import org.example.commands.TwoStateCommand;
+
+import org.example.command.AbstractCommand;
+import org.example.command.TwoStateCommand;
 import org.example.internal.ConstantManager;
-import org.example.state.State;
 import org.example.internal.FileManager;
+import org.example.state.State;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -57,7 +59,7 @@ public class EditFileNameCommand extends AbstractCommand implements TwoStateComm
                     throw new IOException("Ошибка при работе с файлом.");
                 }
             }
-            default -> throw new IOException("Ни одного корректного состояние не было передано");
+            default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
     }
 }

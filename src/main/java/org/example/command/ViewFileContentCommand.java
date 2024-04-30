@@ -27,7 +27,6 @@ public class ViewFileContentCommand extends AbstractCommand implements OneStateC
     public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
         String[] arguments = messageFromUser.split("\\s+");
-
         if (!checkArgumentsCount(2, arguments)) {
             throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
         }

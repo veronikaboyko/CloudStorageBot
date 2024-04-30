@@ -52,7 +52,7 @@ public class EditFileCommand extends AbstractCommand implements TwoStateCommand
                     throw new IOException("Ошибка при работе с файлом.");
                 }
             }
-            default -> throw new IOException("Ни одного корректного состояния не было передано");
+            default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
     }
 }
