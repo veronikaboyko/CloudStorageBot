@@ -16,8 +16,6 @@ import java.util.Set;
  */
 public class FileManager
 {
-    private final String USER_DATA_DIRECTORY = ConstantManager.USER_DATA_DIRECTORY;
-
     private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
 
 
@@ -29,8 +27,9 @@ public class FileManager
      */
     private void createUserDir(String chatId) throws IOException
     {
-        Path directoryPath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId);
-        if (!Files.exists(directoryPath)) {
+        Path directoryPath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId);
+        if (!Files.exists(directoryPath))
+        {
             Files.createDirectories(directoryPath);
         }
     }
@@ -45,12 +44,14 @@ public class FileManager
     public void createFile(String fileName, String chatId) throws IOException
     {
         createUserDir(chatId);
-        Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
+        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
 
-        if (!isValidFileName(fileName)) {
+        if (!isValidFileName(fileName))
+        {
             throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
         }
-        if (Files.exists(filePath)) {
+        if (Files.exists(filePath))
+        {
             throw new IOException("Файл с таким именем уже существует.");
         }
         Files.createFile(filePath);
@@ -65,8 +66,9 @@ public class FileManager
      */
     public void deleteFile(String fileName, String chatId) throws IOException
     {
-        Path filePath = Paths.get(USER_DATA_DIRECTORY, "user_" + chatId, fileName);
-        if (!Files.exists(filePath)) {
+        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
+        if (!Files.exists(filePath))
+        {
             throw new IOException("Файл с таким именем не существует.");
         }
         Files.delete(filePath);
@@ -86,12 +88,12 @@ public class FileManager
     public void editFileName(String oldName, String chatId, String newName) throws IOException
     {
         String curr_user_directory = String.valueOf(Paths.get(getFileNameByID(chatId)));
-        boolean changed = new File(curr_user_directory, oldName).renameTo(new File(curr_user_directory, newName));
+        new File(curr_user_directory, oldName).renameTo(new File(curr_user_directory, newName));
     }
 
     private String getFileNameByID(String chatId)
     {
-        return USER_DATA_DIRECTORY + "user_" + chatId;
+        return ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId;
     }
 
     /**
@@ -123,14 +125,15 @@ public class FileManager
     public String getFileContent(String fileName, String chatId) throws FileNotFoundException
     {
         StringBuilder content = new StringBuilder();
-        try {
-            File file = new File(String.valueOf(Paths.get(getFileNameByID(chatId), fileName)));
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
+        try (Scanner scanner = new Scanner(new File(String.valueOf(Paths.get(getFileNameByID(chatId), fileName)))))
+        {
+            while (scanner.hasNextLine())
+            {
                 content.append(scanner.nextLine()).append("\n");
             }
-            scanner.close();
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e)
+        {
             throw new FileNotFoundException("Файл не найден!");
         }
         return content.toString();
@@ -145,7 +148,8 @@ public class FileManager
     private String getFileExtension(String fileName)
     {
         int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex == -1 || dotIndex == fileName.length() - 1) {
+        if (dotIndex == -1 || dotIndex == fileName.length() - 1)
+        {
             return "";
         }
         return fileName.substring(dotIndex);
@@ -161,18 +165,23 @@ public class FileManager
     {
         final StringBuilder userFileList = new StringBuilder();
         File currentUserDirectory = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId);
-        if (currentUserDirectory.isDirectory()) {
+        if (currentUserDirectory.isDirectory())
+        {
             File[] files = currentUserDirectory.listFiles();
-            if (files == null) {
+            if (files == null)
+            {
                 throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
             }
-            for (File file : files) {
-                if (file.isFile()) {
+            for (File file : files)
+            {
+                if (file.isFile())
+                {
                     userFileList.append(file.getName()).append("\n");
                 }
             }
             return userFileList.toString();
-        } else {
+        } else
+        {
             throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
         }
     }

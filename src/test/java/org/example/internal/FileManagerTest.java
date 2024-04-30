@@ -1,7 +1,9 @@
 package org.example.internal;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,7 +36,6 @@ public class FileManagerTest
     @Test
     public void testCreateFile() throws IOException
     {
-
         fileManager.createFile("testCreateFile.txt", TEST_CHAT_ID);
         Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID, "testCreateFile.txt");
         assertTrue(Files.exists(filePath));

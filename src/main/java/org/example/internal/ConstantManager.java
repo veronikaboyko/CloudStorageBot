@@ -22,8 +22,7 @@ public class ConstantManager
     /**
      * Директория, где лежат директории по каждому пользователю
      */
-    public static final String USER_DATA_DIRECTORY = "src/main/java/org/example/usersData/";
-    //System.getProperty(user.home)+"/CloudBot"?
+    public static final String USER_DATA_DIRECTORY = System.getProperty("user.home") + "/CloudBot/";
     /**
      * Когда не найдены файлы пользователя
      */
