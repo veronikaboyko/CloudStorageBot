@@ -4,10 +4,7 @@ package org.example.internal;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -69,7 +66,7 @@ public class FileManager
         Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
         if (!Files.exists(filePath))
         {
-            throw new IOException("Файл с таким именем не существует.");
+            throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
         }
         Files.delete(filePath);
     }
@@ -79,7 +76,14 @@ public class FileManager
      */
     public void editFile(String fileName, String chatId, String newText) throws IOException
     {
-        Files.write(Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId, fileName), newText.getBytes());
+        try
+        {
+            Files.write(Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId, fileName), newText.getBytes());
+        }
+        catch (NoSuchFileException exception)
+        {
+            throw new NoSuchFileException(ConstantManager.NO_SUCH_FILE_EXISTS);
+        }
     }
 
     /**
@@ -119,7 +123,14 @@ public class FileManager
      */
     public void writeToFile(String fileToWrite, String chatId, String messageFromUser) throws IOException
     {
-        Files.write(Paths.get(getFileNameByID(chatId), fileToWrite), messageFromUser.getBytes(), StandardOpenOption.APPEND);
+        try
+        {
+            Files.write(Paths.get(getFileNameByID(chatId), fileToWrite), messageFromUser.getBytes(), StandardOpenOption.APPEND);
+        }
+        catch (NoSuchFileException ioException)
+        {
+            throw new NoSuchFileException(ConstantManager.NO_SUCH_FILE_EXISTS);
+        }
     }
 
     public String getFileContent(String fileName, String chatId) throws FileNotFoundException

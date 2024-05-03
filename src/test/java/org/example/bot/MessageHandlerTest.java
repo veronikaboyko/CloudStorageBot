@@ -1,5 +1,6 @@
 package org.example.bot;
 
+import org.example.internal.ConstantManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -9,7 +10,7 @@ import static org.junit.Assert.*;
 public class MessageHandlerTest
 {
     private MessageHandler messageHandler;
-    private final String TEST_CHAT_ID = "1";
+    private final String TEST_CHAT_ID = "1_";
 
 
     @Before
@@ -65,7 +66,7 @@ public class MessageHandlerTest
         messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
         messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
         SendMessage secondDeleteMessage = (SendMessage) messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
-        assertEquals(new SendMessage(TEST_CHAT_ID, "Файл с таким именем не существует."), secondDeleteMessage);
+        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует!"), secondDeleteMessage);
     }
 
     /**
@@ -102,7 +103,7 @@ public class MessageHandlerTest
     public void testHandleEditFileNameCommandNotExistingFile()
     {
         final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/editFileName f.txt", TEST_CHAT_ID);
-        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует"), sendMessage);
+        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует!"), sendMessage);
     }
 
     /**
@@ -126,7 +127,7 @@ public class MessageHandlerTest
     public void testHandleEditFileCommandNotCorrectName()
     {
         final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/editFile f.txt", TEST_CHAT_ID);
-        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует"), sendMessage);
+        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует!"), sendMessage);
     }
 
     /**
@@ -175,7 +176,7 @@ public class MessageHandlerTest
     public void testHandleViewFileContentTestIncorrectInputFIle()
     {
         final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/viewFileContent f.txt", TEST_CHAT_ID);
-        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует."), sendMessage);
+        assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует!"), sendMessage);
     }
 
     /**
