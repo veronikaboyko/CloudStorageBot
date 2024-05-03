@@ -24,6 +24,18 @@ public class ConstantManager
      */
     public static final String USER_DATA_DIRECTORY = System.getProperty("user.home") + "/CloudBot/";
     /**
+     * Для исключений, когда файла с таким названием не существует
+     */
+    public static final String NO_SUCH_FILE_EXISTS = "Файла с таким названием не существует!";
+    /**
+     * Для исключений, когда некорректно название файла
+     */
+    public static final String INCORRECT_FILE_NAME = "Некорректное название файла.";
+    /**
+     * Для SendMessage, сообщение о том что пользователю нужно ввести новое содержимое
+     */
+    public static final String INPUT_NEW_FILE_CONTENT = "Введите новое содержимое файла!";
+    /**
      * Когда не найдены файлы пользователя
      */
     public static final String NO_USER_FILES_FOUND = "У вас пока что нет файлов." +

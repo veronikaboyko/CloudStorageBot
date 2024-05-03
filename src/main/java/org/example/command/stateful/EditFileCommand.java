@@ -35,13 +35,13 @@ public class EditFileCommand extends AbstractCommand implements TwoStateCommand
                 }
                 final String fileName = arguments[1];
                 if (!fileManager.isValidFileName(fileName)) {
-                    throw new IOException("Некорректное название файла");
+                    throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
                 }
                 if (!fileManager.existsFile(fileName, chatId)) {
-                    throw new IOException("Файла с таким названием не существует");
+                    throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
                 }
                 fileNamesCasher.add(chatId, fileName);
-                return new SendMessage(chatId, "Введите новое содержимое файла.");
+                return new SendMessage(chatId, ConstantManager.INPUT_NEW_FILE_CONTENT);
             }
             case GOT_DATA_FROM_USER -> {
                 try {

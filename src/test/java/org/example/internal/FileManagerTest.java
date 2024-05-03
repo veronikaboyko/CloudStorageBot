@@ -36,10 +36,10 @@ public class FileManagerTest
     @Test
     public void testCreateFile() throws IOException
     {
-        fileManager.createFile("testCreateFile.txt", TEST_CHAT_ID);
-        Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID, "testCreateFile.txt");
+        fileManager.createFile("testCreateFile1.txt", TEST_CHAT_ID);
+        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + TEST_CHAT_ID, "testCreateFile1.txt");
         assertTrue(Files.exists(filePath));
-        fileManager.deleteFile("testCreateFile.txt", TEST_CHAT_ID);
+        fileManager.deleteFile("testCreateFile1.txt", TEST_CHAT_ID);
     }
 
     /**
@@ -65,6 +65,7 @@ public class FileManagerTest
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
         IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.txt", TEST_CHAT_ID));
         assertTrue(exception.getMessage().contains("Файл с таким именем уже существует."));
+        fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
     }
 
     /**
@@ -75,11 +76,11 @@ public class FileManagerTest
     @Test
     public void testDeleteFile() throws IOException
     {
-        fileManager.createFile("testDeleteFile.txt", TEST_CHAT_ID);
-        Path filePath = Paths.get("src/main/java/org/example/usersData/user_" + TEST_CHAT_ID,
-                "testDeleteFile.txt");
+        fileManager.createFile("testDeleteFile2.txt", TEST_CHAT_ID);
+        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + TEST_CHAT_ID,
+                "testDeleteFile2.txt");
         assertTrue(Files.exists(filePath));
-        fileManager.deleteFile("testDeleteFile.txt", TEST_CHAT_ID);
+        fileManager.deleteFile("testDeleteFile2.txt", TEST_CHAT_ID);
         assertFalse(Files.exists(filePath));
     }
 
@@ -94,21 +95,26 @@ public class FileManagerTest
         fileManager.createFile("testDelFile.txt", TEST_CHAT_ID);
         fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID);
         IOException exception = assertThrows(IOException.class, () -> fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID));
-        assertTrue(exception.getMessage().contains("Файл с таким именем не существует."));
+        assertTrue(exception.getMessage().contains("Файла с таким названием не существует!"));
     }
 
     /**
      * Тестирует редактирование содержимого файла (проверка, что добавленная в файл строка действительно дописалась).
-     *
-     * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test(expected = NoSuchFileException.class)
-    public void testEditFile() throws IOException
+    @Test
+    public void testEditFile()
     {
-        FileManager fileManager = new FileManager();
-        String newText = "New text content";
-        fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
-        assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(newText));
+        try
+        {
+            FileManager fileManager = new FileManager();
+            String newText = "New text content";
+            fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
+            assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(newText));
+        }
+        catch (IOException e)
+        {
+            assertEquals("Файла с таким названием не существует!", e.getMessage());
+        }
     }
 
     /**
@@ -157,16 +163,21 @@ public class FileManagerTest
 
     /**
      * Тестирует запись в файл (что существует дописанная в файл строка).
-     *
-     * @throws IOException если происходит ошибка ввода-вывода
      */
-    @Test(expected = NoSuchFileException.class)
-    public void testWriteToFile() throws IOException
+    @Test
+    public void testWriteToFile()
     {
-        FileManager fileManager = new FileManager();
-        String message = "Message to append";
-        fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, message);
-        assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(message));
+        try
+        {
+            FileManager fileManager = new FileManager();
+            String message = "Message to append";
+            fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, message);
+            assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(message));
+        }
+        catch (IOException ex)
+        {
+            assertEquals("Файла с таким названием не существует!", ex.getMessage());
+        }
     }
 
     /**

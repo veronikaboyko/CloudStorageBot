@@ -36,13 +36,13 @@ public class WriteToFileCommand extends AbstractCommand implements TwoStateComma
                 }
                 final String fileName = arguments[1];
                 if (!fileManager.isValidFileName(fileName)) {
-                    throw new IOException("Некорректное название файла");
+                    throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
                 }
                 if (!fileManager.existsFile(fileName, chatId)) {
                     throw new IOException("Сначала создайте этот файл");
                 }
                 fileNamesCasher.add(chatId, fileName);
-                return new SendMessage(chatId, "Введите содержимое файла.");
+                return new SendMessage(chatId, ConstantManager.INPUT_NEW_FILE_CONTENT);
             }
             case GOT_DATA_FROM_USER -> {
                 try {
