@@ -24,7 +24,7 @@ public class CreateCommand extends AbstractCommand implements OneStateCommand
     @Override
     public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = messageFromUser.split("\\s+");
+        String[] arguments = getSplitArguments(messageFromUser);
 
         if (!checkArgumentsCount(2, arguments)) {
             throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);

@@ -16,4 +16,12 @@ public abstract class AbstractCommand implements Command
     {
         return arguments.length == wordCount;
     }
+
+    /**
+     * Получить разделенное входное сообщение
+     */
+    public String[] getSplitArguments(String messageFromUser)
+    {
+        return messageFromUser.split("\\s+");
+    }
 }

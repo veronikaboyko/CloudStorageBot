@@ -32,7 +32,7 @@ public class EditFileNameCommand extends AbstractCommand implements TwoStateComm
     {
         switch (state) {
             case GOT_COMMAND_FROM_USER -> {
-                String[] arguments = messageFromUser.split("\\s+");
+                String[] arguments = getSplitArguments(messageFromUser);
                 if (!checkArgumentsCount(2, arguments)) {
                     throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
                 }
