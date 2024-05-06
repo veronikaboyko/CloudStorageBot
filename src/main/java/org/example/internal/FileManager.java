@@ -24,11 +24,27 @@ public class FileManager
      */
     private void createUserDir(String chatId) throws IOException
     {
-        Path directoryPath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId);
+        Path directoryPath = getPathToUserDir(chatId);
         if (!Files.exists(directoryPath))
         {
             Files.createDirectories(directoryPath);
         }
+    }
+
+    /**
+     * Получить путь к директории пользователя
+     */
+    private Path getPathToUserDir(String chatId)
+    {
+        return Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId);
+    }
+
+    /**
+     * Получить путь к файлу
+     */
+    private Path getPathToFile(String chatId, String fileName)
+    {
+        return Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
     }
 
     /**
@@ -41,7 +57,7 @@ public class FileManager
     public void createFile(String fileName, String chatId) throws IOException
     {
         createUserDir(chatId);
-        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
+        Path filePath = getPathToFile(chatId, fileName);
 
         if (!isValidFileName(fileName))
         {
@@ -63,7 +79,7 @@ public class FileManager
      */
     public void deleteFile(String fileName, String chatId) throws IOException
     {
-        Path filePath = Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
+        Path filePath = getPathToFile(chatId, fileName);
         if (!Files.exists(filePath))
         {
             throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
@@ -78,7 +94,7 @@ public class FileManager
     {
         try
         {
-            Files.write(Paths.get(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId, fileName), newText.getBytes());
+            Files.write(getPathToFile(chatId, fileName), newText.getBytes());
         }
         catch (NoSuchFileException exception)
         {
@@ -91,8 +107,8 @@ public class FileManager
      */
     public void editFileName(String oldName, String chatId, String newName) throws IOException
     {
-        String curr_user_directory = String.valueOf(Paths.get(getFileNameByID(chatId)));
-        new File(curr_user_directory, oldName).renameTo(new File(curr_user_directory, newName));
+        String currUserDir = getFileNameByID(chatId);
+        new File(currUserDir, oldName).renameTo(new File(currUserDir, newName));
     }
 
     private String getFileNameByID(String chatId)
@@ -133,6 +149,9 @@ public class FileManager
         }
     }
 
+    /**
+     * Получить сожержимое файла
+     */
     public String getFileContent(String fileName, String chatId) throws FileNotFoundException
     {
         StringBuilder content = new StringBuilder();
@@ -175,7 +194,7 @@ public class FileManager
     public String getListFiles(final String chatId) throws IOException
     {
         final StringBuilder userFileList = new StringBuilder();
-        File currentUserDirectory = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId);
+        File currentUserDirectory = new File(getFileNameByID(chatId));
         if (currentUserDirectory.isDirectory())
         {
             File[] files = currentUserDirectory.listFiles();
