@@ -1,7 +1,6 @@
 package org.example.state;
 
 import org.example.command.AbstractCommand;
-import org.example.command.CreateCommand;
 import org.example.command.OneStateCommand;
 import org.example.command.TwoStateCommand;
 
@@ -44,7 +43,7 @@ public class UserCommandManager
      */
     public void add(String chatId, AbstractCommand command)
     {
-        userCommandState.put(chatId, new CommandState(command, State.GOT_COMMAND_FROM_USER));
+        userCommandState.put(chatId, new CommandState(command, State.ON_COMMAND_FROM_USER));
     }
 
     /**
@@ -58,9 +57,10 @@ public class UserCommandManager
             userCommandState.remove(chatId);
         else if (currentCommand instanceof TwoStateCommand)
         {
-            if (commandState.currentState == State.GOT_DATA_FROM_USER)
+            if (commandState.currentState == State.ON_DATA_FROM_USER)
                 userCommandState.remove(chatId);
-            commandState.currentState = State.GOT_DATA_FROM_USER;
+            else
+                commandState.currentState = State.ON_DATA_FROM_USER;
         }
     }
 

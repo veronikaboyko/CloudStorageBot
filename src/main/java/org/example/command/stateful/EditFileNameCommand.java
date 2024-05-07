@@ -31,13 +31,12 @@ public class EditFileNameCommand extends AbstractCommand implements TwoStateComm
     public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
         String[] arguments = getSplitArguments(messageFromUser);
-        final String fileName = arguments[1];
         switch (state) {
-            case GOT_COMMAND_FROM_USER -> {
-
+            case ON_COMMAND_FROM_USER -> {
                 if (!checkArgumentsCount(2, arguments)) {
                     throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
                 }
+                final String fileName = arguments[1];
                 if (!fileManager.isValidFileName(fileName)) {
                     throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
                 }
@@ -47,17 +46,17 @@ public class EditFileNameCommand extends AbstractCommand implements TwoStateComm
                 fileNamesCasher.add(chatId, fileName);
                 return new SendMessage(chatId, "Введите новое название файла.");
             }
-            case GOT_DATA_FROM_USER -> {
+            case ON_DATA_FROM_USER -> {
                 if (!fileManager.isValidFileName(messageFromUser)) {
                     throw new IOException("Некорректное название файла.");
                 }
+                final String oldFileName = fileNamesCasher.getData(chatId);
                 try {
-                    final String oldFileName = fileNamesCasher.getData(chatId);
                     fileManager.editFileName(oldFileName, chatId, messageFromUser);
                     fileNamesCasher.clearUserCash(chatId);
                     return new SendMessage(chatId, oldFileName + " -> " + messageFromUser);
                 } catch (IOException e) {
-                    throw new IOException("Не удалось переименовать файл %s. ".formatted(fileName) + e.getMessage(), e);
+                    throw new IOException("Не удалось переименовать файл %s. ".formatted(oldFileName) + e.getMessage(), e);
                 }
             }
             default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);

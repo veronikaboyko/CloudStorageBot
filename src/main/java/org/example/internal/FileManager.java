@@ -14,7 +14,12 @@ import java.util.Set;
 public class FileManager
 {
     private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
-
+    private String directoryToWork = ConstantManager.USER_DATA_DIRECTORY; //по умолчанию
+    public FileManager(String directoryToWork)
+    {
+        this.directoryToWork = directoryToWork;
+    }
+    public FileManager(){}
 
     /**
      * Метод для создания директории пользователя, в которой будут храниться его личные файлы.
@@ -36,7 +41,7 @@ public class FileManager
      */
     private Path getPathToUserDir(String chatId)
     {
-        return Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId);
+        return Paths.get(directoryToWork, "user_" + chatId);
     }
 
     /**
@@ -44,7 +49,7 @@ public class FileManager
      */
     private Path getPathToFile(String chatId, String fileName)
     {
-        return Paths.get(ConstantManager.USER_DATA_DIRECTORY, "user_" + chatId, fileName);
+        return Paths.get(directoryToWork, "user_" + chatId, fileName);
     }
 
     /**
@@ -105,15 +110,17 @@ public class FileManager
     /**
      * Поменять имя файла
      */
-    public void editFileName(String oldName, String chatId, String newName) throws IOException
+    public boolean editFileName(String oldName, String chatId, String newName) throws IOException
     {
         String currUserDir = getFileNameByID(chatId);
-        new File(currUserDir, oldName).renameTo(new File(currUserDir, newName));
+        if (new File(currUserDir, oldName).renameTo(new File(currUserDir, newName)))
+            return true;
+        throw new IOException("Ошибка в переименовывании файла %s".formatted(oldName));
     }
 
     private String getFileNameByID(String chatId)
     {
-        return ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId;
+        return directoryToWork + "user_" + chatId;
     }
 
     /**
