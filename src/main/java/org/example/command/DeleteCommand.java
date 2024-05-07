@@ -35,8 +35,7 @@ public class DeleteCommand extends AbstractCommand implements OneStateCommand
             fileManager.deleteFile(fileName, chatId);
             return new SendMessage(chatId, "Файл успешно удален.");
         } catch (IOException e) {
-            System.out.println("Не удалось удалить файл. " + e.getMessage());
-            throw new IOException(e.getMessage());
+            throw new IOException("Не удалось удалить файл %s. ".formatted(fileName) + e.getMessage(), e);
         }
     }
 }

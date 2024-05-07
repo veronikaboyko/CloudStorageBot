@@ -44,8 +44,7 @@ public class ViewFileContentCommand extends AbstractCommand implements OneStateC
             else
                 return new SendMessage(chatId, "Файл пуст.");
         } catch (FileNotFoundException e) {
-            System.out.println("Внутрення ошибка при работе с файлом. " + e.getMessage());
-            throw new IOException("Внутрення ошибка при работе с файлом.");
+            throw new IOException("Не удалось получить содержимое файла %s. ".formatted(fileName) + e.getMessage(), e);
         }
     }
 }

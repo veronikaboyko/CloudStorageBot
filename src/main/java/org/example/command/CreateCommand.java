@@ -32,10 +32,9 @@ public class CreateCommand extends AbstractCommand implements OneStateCommand
         final String fileName = arguments[1];
         try {
             fileManager.createFile(fileName, chatId);
-            return new SendMessage(chatId, "Файл успешно создан.");
+            return new SendMessage(chatId, "Файл %s успешно создан.".formatted(fileName));
         } catch (IOException e) {
-            System.out.println("Не удалось создать файл. " + e.getMessage());
-            throw new IOException(e.getMessage());
+            throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);
         }
     }
 }

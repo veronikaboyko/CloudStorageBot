@@ -48,7 +48,7 @@ public class FileManagerTest
      * @throws IOException если происходит ошибка ввода-вывода
      */
     @Test
-    public void testCreateFileWithInvalidExtension() throws IOException
+    public void testCreateFileWithInvalidExtension()
     {
         IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.jpg", TEST_CHAT_ID));
         assertTrue(exception.getMessage().contains("Неверное расширение файла. Допустимые расширения: txt, json, xml."));
@@ -102,19 +102,13 @@ public class FileManagerTest
      * Тестирует редактирование содержимого файла (проверка, что добавленная в файл строка действительно дописалась).
      */
     @Test
-    public void testEditFile()
+    public void testEditFile() throws IOException
     {
-        try
-        {
-            FileManager fileManager = new FileManager();
-            String newText = "New text content";
-            fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
-            assertTrue(Files.readString(getFilePath(TEST_FILE_NAME)).contains(newText));
-        }
-        catch (IOException e)
-        {
-            assertEquals("Файла с таким названием не существует!", e.getMessage());
-        }
+
+        FileManager fileManager = new FileManager();
+        String newText = "New text content";
+        fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
+        assertEquals("New text content", Files.readString(getFilePath(TEST_FILE_NAME)));
     }
 
     /**
