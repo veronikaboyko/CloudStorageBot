@@ -9,7 +9,6 @@ import org.example.state.UserCommandManager;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,38 +59,30 @@ public class MessageHandler
     public BotApiMethod<?> handleUserMessage(String messageFromUser, String chatId)
     {
         final String potentialCommand = messageFromUser.split(" ")[0];
-        try
+        if (isCommand(potentialCommand))
         {
-            if (isCommand(potentialCommand))
+            final AbstractCommand currentCommand = commands.get(potentialCommand);
+            if (!userCommandManager.exists(chatId))
+                userCommandManager.add(chatId, currentCommand);
+            final State currentState = userCommandManager.getCurrentState(chatId);
+            BotApiMethod<?> botApiMethod = currentCommand.handle(messageFromUser, chatId, currentState);
+            userCommandManager.updateCommandState(chatId);
+            return botApiMethod;
+        } else
+        {
+            if (!userCommandManager.exists(chatId))
+                return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту.");
+            else
             {
-                final AbstractCommand currentCommand = commands.get(potentialCommand);
-                if (!userCommandManager.exists(chatId))
-                    userCommandManager.add(chatId, currentCommand);
-                final State currentState = userCommandManager.getCurrentState(chatId);
-                BotApiMethod<?> botApiMethod = currentCommand.handle(messageFromUser, chatId, currentState);
+                final AbstractCommand command = userCommandManager.getCurrentCommand(chatId);
+                final State currentUserState = userCommandManager.getCurrentState(chatId);
+                BotApiMethod<?> botApiMethod = command.handle(messageFromUser, chatId, currentUserState);
                 userCommandManager.updateCommandState(chatId);
                 return botApiMethod;
-            } else
-            {
-                if (!userCommandManager.exists(chatId))
-                    return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту.");
-                else
-                {
-                    final AbstractCommand command = userCommandManager.getCurrentCommand(chatId);
-                    final State currentUserState = userCommandManager.getCurrentState(chatId);
-                    BotApiMethod<?> botApiMethod = command.handle(messageFromUser, chatId, currentUserState);
-                    userCommandManager.updateCommandState(chatId);
-                    return botApiMethod;
-                }
             }
         }
-        catch (IOException exception)
-        {
-            System.err.println(exception.getMessage());
-            exception.printStackTrace();
-            return new SendMessage(chatId, exception.getMessage());
-        }
     }
+
 
     /**
      * Проверяет, является ли сообщение от пользователя командой

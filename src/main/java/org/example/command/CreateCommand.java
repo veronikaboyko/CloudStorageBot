@@ -22,19 +22,30 @@ public class CreateCommand extends AbstractCommand implements OneStateCommand
     }
 
     @Override
-    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
+    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state)
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        try
+        {
+            String[] arguments = getSplitArguments(messageFromUser);
 
-        if (!checkArgumentsCount(2, arguments)) {
-            throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
+            if (!checkArgumentsCount(2, arguments))
+            {
+                throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
+            }
+            final String fileName = arguments[1];
+            try
+            {
+                fileManager.createFile(fileName, chatId);
+                return new SendMessage(chatId, "Файл %s успешно создан.".formatted(fileName));
+            }
+            catch (IOException e)
+            {
+                throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);
+            }
         }
-        final String fileName = arguments[1];
-        try {
-            fileManager.createFile(fileName, chatId);
-            return new SendMessage(chatId, "Файл %s успешно создан.".formatted(fileName));
-        } catch (IOException e) {
-            throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);
+        catch (IOException exception)
+        {
+            return handleException(exception, chatId);
         }
     }
 }

@@ -12,5 +12,5 @@ import java.io.IOException;
  */
 public interface Command
 {
-    BotApiMethod<?> handle(String messageFromUser, String chatId, State state) throws IOException;
+    BotApiMethod<?> handle(String messageFromUser, String chatId, State state);
 }
