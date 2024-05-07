@@ -27,7 +27,7 @@ public class ListFilesCommand extends AbstractCommand implements OneStateCommand
             String listFiles = fileManager.getListFiles(chatId);
             return new SendMessage(chatId, "Список ваших файлов:\n" + listFiles);
         } catch (IOException e) {
-            throw new IOException("Внутрення ошибка при работе с файлами.");
+            throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
         }
     }
 }

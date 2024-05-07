@@ -28,18 +28,18 @@ public class WriteToFileCommand extends AbstractCommand implements TwoStateComma
     @Override
     public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
     {
+        String[] arguments = getSplitArguments(messageFromUser);
+        final String fileName = arguments[1];
         switch (state) {
             case GOT_COMMAND_FROM_USER -> {
-                String[] arguments = getSplitArguments(messageFromUser);
                 if (!checkArgumentsCount(2, arguments)) {
                     throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
                 }
-                final String fileName = arguments[1];
                 if (!fileManager.isValidFileName(fileName)) {
                     throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
                 }
                 if (!fileManager.existsFile(fileName, chatId)) {
-                    throw new IOException("Сначала создайте этот файл");
+                    throw new IOException("Файл с таким именем не найден.");
                 }
                 fileNamesCasher.add(chatId, fileName);
                 return new SendMessage(chatId, ConstantManager.INPUT_NEW_FILE_CONTENT);
@@ -48,12 +48,13 @@ public class WriteToFileCommand extends AbstractCommand implements TwoStateComma
                 try {
                     fileManager.writeToFile(fileNamesCasher.getData(chatId), chatId, messageFromUser);
                     fileNamesCasher.clearUserCash(chatId);
-                    return new SendMessage(chatId, "Файл успешно сохранен.");
-                } catch (IOException exception) {
-                    throw new IOException("Ошибка при работе с файлом.");
+                    return new SendMessage(chatId, "Файл %s успешно сохранен.".formatted(fileName));
+                } catch (IOException e) {
+                    throw new IOException("Не удалось записать в файл %s. ".formatted(fileName) + e.getMessage(), e);
                 }
             }
-            default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
+            default ->
+                    throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
 
         }
     }

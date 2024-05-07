@@ -26,7 +26,7 @@ public class ConstantManager
     /**
      * Для исключений, когда файла с таким названием не существует
      */
-    public static final String NO_SUCH_FILE_EXISTS = "Файла с таким названием не существует!";
+    public static final String NO_SUCH_FILE_EXISTS = "Файла с таким названием не существует.";
     /**
      * Для исключений, когда некорректно название файла
      */
@@ -34,12 +34,11 @@ public class ConstantManager
     /**
      * Для SendMessage, сообщение о том что пользователю нужно ввести новое содержимое
      */
-    public static final String INPUT_NEW_FILE_CONTENT = "Введите новое содержимое файла!";
+    public static final String INPUT_NEW_FILE_CONTENT = "Введите новое содержимое файла.";
     /**
      * Когда не найдены файлы пользователя
      */
-    public static final String NO_USER_FILES_FOUND = "У вас пока что нет файлов." +
-            " Используйте команду /help, чтобы узнать, как работать с ботом";
+    public static final String NO_USER_FILES_FOUND = "У вас пока что нет файлов.";
     /**
      * Когда в параметр не передано имя файла
      */

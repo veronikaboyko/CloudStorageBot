@@ -24,7 +24,7 @@ public class UserCommandManager
     }
 
     /**
-     * Полчить текущее состояние команды пользователя
+     * Получить текущее состояние команды пользователя
      */
     public State getCurrentState(String chatID)
     {

@@ -162,10 +162,6 @@ public class FileManager
                 content.append(scanner.nextLine()).append("\n");
             }
         }
-        catch (FileNotFoundException e)
-        {
-            throw new FileNotFoundException("Файл не найден!");
-        }
         return content.toString();
     }
 
