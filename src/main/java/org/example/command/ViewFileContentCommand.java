@@ -24,27 +24,40 @@ public class ViewFileContentCommand extends AbstractCommand implements OneStateC
     }
 
     @Override
-    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
+    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state)
     {
-        String[] arguments = getSplitArguments(messageFromUser);
-        if (!checkArgumentsCount(2, arguments)) {
-            throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
+        try
+        {
+            String[] arguments = getSplitArguments(messageFromUser);
+            if (!checkArgumentsCount(2, arguments))
+            {
+                throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
+            }
+            final String fileName = arguments[1];
+            if (!fileManager.isValidFileName(fileName))
+            {
+                throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
+            }
+            if (!fileManager.existsFile(fileName, chatId))
+            {
+                throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
+            }
+            try
+            {
+                final String fileContent = fileManager.getFileContent(fileName, chatId);
+                if (!fileContent.isEmpty())
+                    return new SendMessage(chatId, fileContent);
+                else
+                    return new SendMessage(chatId, "Файл пуст.");
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new IOException("Не удалось получить содержимое файла %s. ".formatted(fileName) + e.getMessage(), e);
+            }
         }
-        final String fileName = arguments[1];
-        if (!fileManager.isValidFileName(fileName)) {
-            throw new IOException(ConstantManager.INCORRECT_FILE_NAME);
-        }
-        if (!fileManager.existsFile(fileName, chatId)) {
-            throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
-        }
-        try {
-            final String fileContent = fileManager.getFileContent(fileName, chatId);
-            if (!fileContent.isEmpty())
-                return new SendMessage(chatId, fileContent);
-            else
-                return new SendMessage(chatId, "Файл пуст.");
-        } catch (FileNotFoundException e) {
-            throw new IOException("Не удалось получить содержимое файла %s. ".formatted(fileName) + e.getMessage(), e);
+        catch (IOException exception)
+        {
+            return handleException(exception, chatId);
         }
     }
 }

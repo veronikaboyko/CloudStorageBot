@@ -21,13 +21,23 @@ public class ListFilesCommand extends AbstractCommand implements OneStateCommand
     }
 
     @Override
-    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state) throws IOException
+    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state)
     {
-        try {
-            String listFiles = fileManager.getListFiles(chatId);
-            return new SendMessage(chatId, "Список ваших файлов:\n" + listFiles);
-        } catch (IOException e) {
-            throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
+        try
+        {
+            try
+            {
+                String listFiles = fileManager.getListFiles(chatId);
+                return new SendMessage(chatId, "Список ваших файлов:\n" + listFiles);
+            }
+            catch (IOException e)
+            {
+                throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
+            }
+        }
+        catch (IOException exception)
+        {
+            return handleException(exception, chatId);
         }
     }
 }
