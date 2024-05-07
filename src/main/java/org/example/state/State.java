@@ -6,11 +6,11 @@ package org.example.state;
 public enum State
 {
     /**
-     * Получили команду
+     * На стадии работы с командой пользователя
      */
-    GOT_COMMAND_FROM_USER,
+    ON_COMMAND_FROM_USER,
     /**
-     * Получили данные
+     * На стадии работы с данными от пользователя
      */
-    GOT_DATA_FROM_USER
+    ON_DATA_FROM_USER
 }
