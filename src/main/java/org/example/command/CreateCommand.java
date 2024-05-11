@@ -3,49 +3,58 @@ package org.example.command;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
 /**
  * Команда /create.
  */
-public class CreateCommand extends AbstractCommand implements OneStateCommand
+public class CreateCommand extends AbstractCommand
 {
     private final FileManager fileManager;
 
-    public CreateCommand()
+    public CreateCommand(FileManager fileManager)
     {
-        fileManager = new FileManager();
+        super(new StateSwitcher(State.ON_COMMAND_FROM_USER));
+        this.fileManager = fileManager;
     }
 
     @Override
-    public BotApiMethod<Message> handle(String messageFromUser, String chatId, State state)
+    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
     {
+        String[] arguments = getSplitArguments(messageFromUser);
+
+        if (!checkArgumentsCount(2, arguments))
+        {
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NO_FILE_NAME_FOUND), true);
+        }
+        if (!arguments[0].equals("/create"))
+            return new CommandResult(new SendMessage(chatId, "Некорректная команда!"), false);
+        final String fileName = arguments[1];
         try
         {
-            String[] arguments = getSplitArguments(messageFromUser);
-
-            if (!checkArgumentsCount(2, arguments))
-            {
-                throw new IOException(ConstantManager.NO_FILE_NAME_FOUND);
-            }
-            final String fileName = arguments[1];
-            try
-            {
-                fileManager.createFile(fileName, chatId);
-                return new SendMessage(chatId, "Файл %s успешно создан.".formatted(fileName));
-            }
-            catch (IOException e)
-            {
-                throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);
-            }
+            fileManager.createFile(fileName, chatId);
+            return new CommandResult(new SendMessage(chatId, "Файл %s успешно создан.".formatted(fileName)), true);
         }
-        catch (IOException exception)
+        catch (IOException e)
         {
-            return handleException(exception, chatId);
+            switch (e.getMessage())
+            {
+                case ConstantManager.FILE_ALREADY_EXISTS ->
+                {
+                    return new CommandResult(new SendMessage(chatId, "Не удалось создать файл %s. ".formatted(fileName)
+                            + ConstantManager.FILE_ALREADY_EXISTS), true);
+                }
+                case ConstantManager.ALLOWED_EXTENSIONS_MISTAKE ->
+                {
+                    return new CommandResult(new SendMessage(chatId, "Не удалось создать файл %s. ".formatted(fileName)
+                            + "Неверное расширение файла. " + "Допустимые расширения: txt, json, xml."), true);
+                }
+                default ->
+                        throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);
+            }
         }
     }
 }

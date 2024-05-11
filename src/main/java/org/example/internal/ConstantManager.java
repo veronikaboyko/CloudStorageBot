@@ -30,6 +30,8 @@ public class ConstantManager
     /**
      * Для исключений, когда некорректно название файла
      */
+    public static final String FILE_ALREADY_EXISTS = "Файл с таким именем уже существует.";
+    public static final String ALLOWED_EXTENSIONS_MISTAKE = "Неверное расширение файла. Допустимые расширения: txt, json, xml.";
     public static final String INCORRECT_FILE_NAME = "Некорректное название файла.";
     /**
      * Для SendMessage, сообщение о том что пользователю нужно ввести новое содержимое
