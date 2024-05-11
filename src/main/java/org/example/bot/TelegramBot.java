@@ -1,5 +1,6 @@
 package org.example.bot;
 
+import org.example.internal.FileManager;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -22,7 +23,7 @@ public class TelegramBot extends TelegramLongPollingBot
     {
         super(botToken);
         this.botUsername = botUsername;
-        this.messageHandler = new MessageHandler();
+        this.messageHandler = new MessageHandler(new FileManager());
     }
 
 

@@ -1,16 +1,20 @@
 package org.example.command;
 
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.io.IOException;
+import org.example.state.State;
+import org.example.state.StateSwitcher;
 
 /**
  * Описывает поведение любой команды
  */
 public abstract class AbstractCommand implements Command
 {
+    private final StateSwitcher stateSwitcher;
+
+    public AbstractCommand(StateSwitcher stateSwitcher)
+    {
+        this.stateSwitcher = stateSwitcher;
+    }
+
     /**
      * Проверить, что количество переданных в команду аргументов совпадает с необходимым
      *
@@ -32,12 +36,10 @@ public abstract class AbstractCommand implements Command
     }
 
     /**
-     * В случае исключение одинаково обрабатываем для всех команд
+     * Получить новое состояние по старому
      */
-    public BotApiMethod<Message> handleException(IOException exception, String chatId)
+    public State getNewState(State oldState)
     {
-        System.err.println(exception.getMessage());
-        exception.printStackTrace();
-        return new SendMessage(chatId, exception.getMessage());
+        return stateSwitcher.newState(oldState);
     }
 }

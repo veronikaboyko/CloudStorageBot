@@ -5,9 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -21,11 +21,16 @@ public class FileManagerTest
     private static final String TEST_CHAT_ID2 = "test_chat_id";
     private static final String TEST_FILE_NAME = "test.txt";
     private static final String TEST_NEW_FILE_NAME = "new_test.txt";
-    public static final String WORKING_DIRECTORY = "src/test/java/org/example/temp/";
+    private String WORKING_DIRECTORY;
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
-    public void setUp()
+    public void setUp() throws IOException
     {
+        File currentDirectory = temporaryFolder.newFolder("forTesting");
+        WORKING_DIRECTORY = currentDirectory.getAbsolutePath() + "/";
         fileManager = new FileManager(WORKING_DIRECTORY);
     }
 
@@ -41,7 +46,6 @@ public class FileManagerTest
         fileManager.createFile("testCreateFile1.txt", TEST_CHAT_ID);
         Path filePath = Paths.get(WORKING_DIRECTORY + "user_" + TEST_CHAT_ID, "testCreateFile1.txt");
         assertTrue(Files.exists(filePath));
-
         fileManager.deleteFile("testCreateFile1.txt", TEST_CHAT_ID);
     }
 
@@ -54,7 +58,7 @@ public class FileManagerTest
     public void testCreateFileWithInvalidExtension()
     {
         IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.jpg", TEST_CHAT_ID));
-        assertTrue(exception.getMessage().contains("Неверное расширение файла. Допустимые расширения: txt, json, xml."));
+        assertEquals("Неверное расширение файла. Допустимые расширения: txt, json, xml.",exception.getMessage());
     }
 
     /**
@@ -65,11 +69,11 @@ public class FileManagerTest
     @Test
     public void testCreateFileThatAlreadyExists() throws IOException
     {
-
         fileManager.createFile("testFile.txt", TEST_CHAT_ID);
         IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.txt", TEST_CHAT_ID));
-        assertTrue(exception.getMessage().contains("Файл с таким именем уже существует."));
+        assertEquals("Файл с таким именем уже существует.", exception.getMessage());
         fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
+
     }
 
     /**
@@ -108,17 +112,12 @@ public class FileManagerTest
     @Test
     public void testEditFile() throws IOException
     {
-        try
-        {
-            fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
-            String newText = "New text content";
-            fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
-            assertEquals("New text content", Files.readString(getFilePath(TEST_FILE_NAME)));
-        }
-        finally
-        {
-            fileManager.deleteFile(TEST_FILE_NAME, TEST_CHAT_ID2);
-        }
+
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        String newText = "New text content";
+        fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
+        assertEquals("New text content", Files.readString(getFilePath(TEST_FILE_NAME)));
+        fileManager.deleteFile(TEST_FILE_NAME, TEST_CHAT_ID2);
     }
 
     /**
@@ -129,19 +128,11 @@ public class FileManagerTest
     @Test
     public void testEditFileName() throws IOException
     {
-        try
-        {
-            fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
-            fileManager.editFileName(TEST_FILE_NAME, TEST_CHAT_ID2, TEST_NEW_FILE_NAME);
-            assertTrue(Files.exists(getFilePath(TEST_NEW_FILE_NAME)));
-            assertFalse(Files.exists(getFilePath(TEST_FILE_NAME)));
-            fileManager.deleteFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        }
-        catch (IOException ex)
-        {
-            if (ex.getMessage().contains("Ошибка в переименовывании файла"))
-                fileManager.deleteFile(TEST_FILE_NAME, TEST_CHAT_ID2);
-        }
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.editFileName(TEST_FILE_NAME, TEST_CHAT_ID2, TEST_NEW_FILE_NAME);
+        assertTrue(Files.exists(getFilePath(TEST_NEW_FILE_NAME)));
+        assertFalse(Files.exists(getFilePath(TEST_FILE_NAME)));
+        fileManager.deleteFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
     }
 
     /**
@@ -160,6 +151,8 @@ public class FileManagerTest
     public void testIsValidFileNameWithValidName()
     {
         assertTrue(fileManager.isValidFileName("test.txt"));
+        assertTrue(fileManager.isValidFileName("txt.json"));
+        assertTrue(fileManager.isValidFileName("xml.xml"));
     }
 
     /**
@@ -169,6 +162,10 @@ public class FileManagerTest
     public void testIsValidFileNameWithInvalidName()
     {
         assertFalse(fileManager.isValidFileName("test.jpg"));
+        assertFalse(fileManager.isValidFileName("test.pdf"));
+        assertFalse(fileManager.isValidFileName("test.txtt"));
+        assertFalse(fileManager.isValidFileName("test.jsonj"));
+        assertFalse(fileManager.isValidFileName("test.xmll"));
     }
 
     /**
