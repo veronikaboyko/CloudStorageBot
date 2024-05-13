@@ -1,6 +1,6 @@
 package org.example.command;
 
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 
 /**
  * Результат работы команды.
@@ -10,16 +10,16 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
  */
 public class CommandResult
 {
-    private final BotApiMethod<?> dataForUser;
+    private final PartialBotApiMethod<?> dataForUser;
     private final boolean canUpdate;
 
-    public CommandResult(BotApiMethod<?> dataForUser, boolean canUpdate)
+    public CommandResult(PartialBotApiMethod<?> dataForUser, boolean canUpdate)
     {
         this.dataForUser = dataForUser;
         this.canUpdate = canUpdate;
     }
 
-    public BotApiMethod<?> getDataForUser()
+    public PartialBotApiMethod<?> getDataForUser()
     {
         return dataForUser;
     }

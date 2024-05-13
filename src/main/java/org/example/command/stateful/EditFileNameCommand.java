@@ -18,7 +18,7 @@ import java.io.IOException;
 public class EditFileNameCommand extends AbstractCommand
 {
     private final FileManager fileManager;
-    private final Casher<String> fileNamesCasher = new FileNamesCasher();
+    private final Casher<String> fileNamesCasher = new FilesDataCasher();
 
 
     public EditFileNameCommand(FileManager fileManager)

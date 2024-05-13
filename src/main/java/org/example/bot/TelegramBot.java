@@ -3,12 +3,14 @@ package org.example.bot;
 import org.example.internal.FileManager;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Document;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+
+
 
 /**
  * Telegram bot.
@@ -39,7 +41,7 @@ public class TelegramBot extends TelegramLongPollingBot
     {
         String messageFromUser = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
-        BotApiMethod<?> messageToSend = messageHandler.handleUserMessage(messageFromUser, chatId);
+        PartialBotApiMethod<?> messageToSend = messageHandler.handleUserMessage(messageFromUser, chatId);
         send(messageToSend);
     }
 
@@ -63,10 +65,13 @@ public class TelegramBot extends TelegramLongPollingBot
      *
      * @param message Сообщение (текст, документ и т.д.), которое нужно отправить.
      */
-    private void send(BotApiMethod<?> message)
+    private void send(PartialBotApiMethod<?> message)
     {
         try {
-            execute(message);
+            if (message instanceof SendMessage)
+                execute((SendMessage) message);
+            else
+                execute((SendDocument) message);
         } catch (TelegramApiException e) {
             System.out.println("Не удалось отправить сообщение. " + e.getMessage());
         }

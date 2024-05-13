@@ -5,7 +5,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +46,7 @@ public class MessageHandlerTest
         SendMessage delMessage = (SendMessage) messageHandler.handleUserMessage("/delete %s".formatted(file), TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файл успешно удален."), delMessage);
         listFiles = (SendMessage) messageHandler.handleUserMessage("/listFiles", TEST_CHAT_ID);
-        assertEquals(new SendMessage(TEST_CHAT_ID, "Список ваших файлов:\n"), listFiles);
+        assertEquals(new SendMessage(TEST_CHAT_ID, "У вас пока еще нет файлов."), listFiles);
         messageHandler.handleUserMessage("/delete %s".formatted(file), TEST_CHAT_ID);
     }
 
@@ -216,4 +218,54 @@ public class MessageHandlerTest
         assertEquals("2\n", sendMessage.getText());
     }
 
+    /**
+     * Тест команды /findFileName (поиск подстроки в именах файлов)
+     */
+    @Test
+    public void testHandleFindFileName()
+    {
+        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("/create t.txt", TEST_CHAT_ID);
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/findFileName f", TEST_CHAT_ID);
+        assertEquals("По запросу “f” найдены следующие файлы:\nf.txt\n", sendMessage.getText());
+    }
+
+    /**
+     * Тест команды /findFileName (не найдено таких файлов)
+     */
+    @Test
+    public void testHandleFindFileNameNotFound()
+    {
+        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("/create t.txt", TEST_CHAT_ID);
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/findFileName r", TEST_CHAT_ID);
+        assertEquals("По запросу “r” не найдено файлов.", sendMessage.getText());
+    }
+
+
+    /**
+     * Тест команды /findFile (поиск подстроки в содержимом файлов)
+     */
+    @Test
+    public void testHandleFindFile()
+    {
+        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("какой-то текст", TEST_CHAT_ID);
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/findFile -то текст", TEST_CHAT_ID);
+        assertEquals("По запросу “-то текст” найдены следующие файлы:\nf.txt\n", sendMessage.getText());
+    }
+
+    /**
+     * Тест команды /findFile (не найдено таких файлов)
+     */
+    @Test
+    public void testHandleFindFileNotFound()
+    {
+        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage("какой-то текст", TEST_CHAT_ID);
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/findFile мемеме", TEST_CHAT_ID);
+        assertEquals("По запросу “мемеме” не найдено файлов.", sendMessage.getText());
+    }
 }

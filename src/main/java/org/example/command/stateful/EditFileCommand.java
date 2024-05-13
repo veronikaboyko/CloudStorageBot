@@ -9,7 +9,6 @@ import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 
 /**
  * Команда /editFile
@@ -17,7 +16,7 @@ import java.nio.file.NoSuchFileException;
 public class EditFileCommand extends AbstractCommand
 {
     private final FileManager fileManager;
-    private final Casher<String> fileNamesCasher = new FileNamesCasher();
+    private final Casher<String> fileNamesCasher = new FilesDataCasher();
 
     public EditFileCommand(FileManager fileManager)
     {
@@ -68,6 +67,5 @@ public class EditFileCommand extends AbstractCommand
             }
             default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
-
     }
 }

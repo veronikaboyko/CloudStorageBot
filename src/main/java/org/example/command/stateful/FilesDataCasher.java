@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Кэширует имена файлов
  */
-public class FileNamesCasher implements Casher<String>
+public class FilesDataCasher implements Casher<String>
 {
     private final Map<String, String> usersFileNamesKeeper = new HashMap<>();
 

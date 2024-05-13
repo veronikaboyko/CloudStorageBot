@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Scanner;
 import java.util.Set;
+import java.io.*;
+
+
+
 
 /**
  * Класс, который отвечает за операции с файлами пользователя.
@@ -189,34 +193,81 @@ public class FileManager
     }
 
     /**
-     * Возвращает список файлов пользователя
+     * Возвращает список файлов пользователя, в названии которых встретилась искомая строка
+     * Если searchString равна null или пустая, возвращает список всех файлов пользователя
      *
      * @param chatId Идентификатор пользователя
+     * @param searchString Искомая строка
+     * @param searchContent Параметр, определяющий, искать ли в содержимом файлов
      * @return Список всех файлов пользователя в виде строки
      */
-    public String getListFiles(final String chatId) throws IOException
+    public String getListFiles(final String chatId, final String searchString, boolean searchContent) throws IOException
     {
         final StringBuilder userFileList = new StringBuilder();
         File currentUserDirectory = new File(getFileNameByID(chatId));
         if (currentUserDirectory.isDirectory())
         {
             File[] files = currentUserDirectory.listFiles();
+
             if (files == null)
             {
                 throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
             }
             for (File file : files)
             {
-                if (file.isFile())
+                if (file.isFile() && (searchString == null|| file.getName().contains(searchString) || searchContent ))
                 {
-                    userFileList.append(file.getName()).append("\n");
+                    if (searchContent)
+                    {
+                        if (fileContainsString(file, searchString)) {
+                            userFileList.append(file.getName()).append("\n");
+                        }
+                    } else {
+                        userFileList.append(file.getName()).append("\n");
+                    }
                 }
+            }
+            if (userFileList.isEmpty())
+            {
+                throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
             }
             return userFileList.toString();
         } else
         {
             throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
         }
+    }
+
+
+    /**
+     * Проверяет, содержит ли файл искомую строку
+     *
+     * @param file Файл, содержимое которого проверяется
+     * @param searchString Искомая строка
+     * @return true, если содержит, иначе false
+     */
+    private boolean fileContainsString(File file, String searchString) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            return reader.lines().anyMatch(line -> line.contains(searchString));
+        }
+    }
+
+
+    /**
+     * Получить файл
+     *
+     * @param fileName Имя файла, который нужно получить
+     * @param chatId Идентификатор пользователя
+     * @return Нужный файл
+     */
+    public File getFile(String fileName, String chatId) throws IOException
+    {
+        Path filePath = getPathToFile(chatId, fileName);
+        if (!Files.exists(filePath))
+        {
+            throw new IOException(ConstantManager.NO_SUCH_FILE_EXISTS);
+        }
+        return new File(getFileNameByID(chatId), fileName);
     }
 }
 

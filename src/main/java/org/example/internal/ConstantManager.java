@@ -18,7 +18,11 @@ public class ConstantManager
             "/listFiles – Посмотреть список файлов из хранилища\n" +
             "/viewFileContent [File.расширение] - Просмотреть содержимое файла\n" +
             "/editFile [File.расширение] - Редактировать содержимое файла\n" +
-            "/editFileName [File.расширение] - Переименовать файл";
+            "/editFileName [File.расширение] - Переименовать файл\n" +
+            "/getFile [FileName.расширение] - Получить файл\n" +
+            "/findFileName [name] - Просмотреть список файлов, в названии которых встречается [name]\n" +
+            "/findFile [content] - Просмотреть список файлов, в содержании которых есть [content]\n" +
+            "/sendFile - Добавить в хранилище пользовательский файл\n";
     /**
      * Директория, где лежат директории по каждому пользователю
      */
@@ -50,4 +54,9 @@ public class ConstantManager
      */
     public static final String BOT_BROKEN_INSIDE_MESSAGE = "Внутрення ошибка телеграм-бота." +
             " Если это сообщение возникло, напишите нам на почту: cloud_bot@yandex.ru";
+
+    public static final String NO_SEARCH_STRING = "В качестве параметра введите искомую строку.";
+
+    public static final String SEND_FILE = "Отправьте файл с расширением .txt, .json или .xml";
+
 }

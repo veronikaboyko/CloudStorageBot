@@ -16,7 +16,7 @@ import java.io.IOException;
 public class WriteToFileCommand extends AbstractCommand
 {
     private final FileManager fileManager;
-    private final Casher<String> fileNamesCasher = new FileNamesCasher();
+    private final Casher<String> fileNamesCasher = new FilesDataCasher();
 
 
     public WriteToFileCommand(FileManager fileManager)

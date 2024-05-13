@@ -7,7 +7,7 @@ import org.example.command.stateful.WriteToFileCommand;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.UserCommandState;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.HashMap;
@@ -48,6 +48,9 @@ public class MessageHandler
         commands.put("/editFileName", new EditFileNameCommand(fileManager));
         commands.put("/listFiles", new ListFilesCommand(fileManager));
         commands.put("/viewFileContent", new ViewFileContentCommand(fileManager));
+        commands.put("/findFileName", new FindFileNameCommand(fileManager));
+        commands.put("/findFile", new FindFileCommand(fileManager));
+        commands.put("/getFile", new GetFileCommand(fileManager));
     }
 
     /**
@@ -57,7 +60,7 @@ public class MessageHandler
      * @param chatId          ID чата.
      * @return Объект, который нужно отправить пользователю.
      */
-    public BotApiMethod<?> handleUserMessage(String messageFromUser, String chatId)
+    public PartialBotApiMethod<?> handleUserMessage(String messageFromUser, String chatId)
     {
         try
         {
