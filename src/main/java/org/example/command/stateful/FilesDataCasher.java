@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Кэширует имена файлов
+ * Кэширует данные команд с состоянием
  */
 public class FilesDataCasher implements Casher<String>
 {
