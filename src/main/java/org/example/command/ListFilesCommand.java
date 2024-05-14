@@ -24,15 +24,12 @@ public class ListFilesCommand extends AbstractCommand
     @Override
     public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
     {
-        try
-        {
-            String listFiles = fileManager.getListFiles(chatId);
+        try {
+            String listFiles = fileManager.getListFiles(chatId, null, false);
             return new CommandResult(new SendMessage(chatId, "Список ваших файлов:\n" + listFiles), true);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             if (e.getMessage().equals(ConstantManager.NO_USER_FILES_FOUND))
-                return new CommandResult(new SendMessage(chatId, "У вас пока еще нет файлов!"), true);
+                return new CommandResult(new SendMessage(chatId, "У вас пока еще нет файлов."), true);
             throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
         }
     }

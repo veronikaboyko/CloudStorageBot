@@ -9,7 +9,6 @@ import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 
 /**
  * Команда /editFile
@@ -68,6 +67,5 @@ public class EditFileCommand extends AbstractCommand
             }
             default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
-
     }
 }

@@ -1,8 +1,6 @@
 package org.example.command;
 
 import org.example.state.State;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-
 import java.io.IOException;
 
 /**

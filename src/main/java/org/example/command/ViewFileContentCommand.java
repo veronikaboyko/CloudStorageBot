@@ -4,9 +4,8 @@ import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

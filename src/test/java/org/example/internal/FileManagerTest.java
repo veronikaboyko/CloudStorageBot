@@ -190,4 +190,43 @@ public class FileManagerTest
         return Paths.get(WORKING_DIRECTORY + "user_" + FileManagerTest.TEST_CHAT_ID2, fileName);
     }
 
+
+    /**
+     * Тестирует получение списка всех файлов
+     */
+    @Test
+    public void testListFiles() throws IOException
+    {
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, null, false));
+    }
+
+    /**
+     * Тестирует получение списка всех файлов с найденной подстрокой в названии
+     */
+    @Test
+    public void testListFilesSearchName() throws IOException
+    {
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "txt", false));
+        assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "new", false));
+    }
+
+    /**
+     * Тестирует получение списка всех файлов с найденной подстрокой в содержании
+     */
+    @Test
+    public void testListFilesSearchContent() throws IOException
+    {
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "первый текст");
+        fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
+        assertEquals("test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "первый", true));
+        assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "второй", true));
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "текст", true));
+    }
+
 }
