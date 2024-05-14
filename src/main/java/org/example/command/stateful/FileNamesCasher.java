@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Кэширует данные команд с состоянием
+ * Кэширует имена файлов
  */
-public class FilesDataCasher implements Casher<String>
+public class FileNamesCasher implements Casher<String>
 {
     private final Map<String, String> usersFileNamesKeeper = new HashMap<>();
 
