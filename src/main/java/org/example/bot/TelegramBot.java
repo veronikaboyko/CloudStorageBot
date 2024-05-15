@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.io.File;
@@ -50,30 +51,11 @@ public class TelegramBot extends TelegramLongPollingBot
         UserMessage<?> userMessage;
         if (update.getMessage().hasDocument())
         {
-            String docId = update.getMessage().getDocument().getFileId();
-            String docName = update.getMessage().getDocument().getFileName();
-            String docMine = update.getMessage().getDocument().getMimeType();
-            long docSize = update.getMessage().getDocument().getFileSize();
-            Document document = new Document();
-            document.setMimeType(docMine);
-            document.setFileName(docName);
-            document.setFileSize(docSize);
-            document.setFileId(docId);
-            GetFile getFile = new GetFile();
-            getFile.setFileId(document.getFileId());
-            try
-            {
-                org.telegram.telegrambots.meta.api.objects.File file = execute(getFile);
-
-                final File systemFile = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId + "/" + docName);
-                downloadFile(file, systemFile);
-                userMessage = new FileMessage(systemFile);
-            }
-            catch (TelegramApiException e)
-            {
-                e.printStackTrace();
-                return;
-            }
+            final Document userDocument = update.getMessage().getDocument();
+            if (!(userDocument.getFileSize() / 1048576 <= 1))
+                send(new SendMessage(chatId, ConstantManager.FILE_SIZE_OVERFLOW));
+            final File file = handleFileReceived(userDocument, chatId);
+            userMessage = new FileMessage(file);
         } else
         {
             String messageFromUser = update.getMessage().getText();
@@ -81,6 +63,35 @@ public class TelegramBot extends TelegramLongPollingBot
         }
         PartialBotApiMethod<?> messageToSend = messageHandler.handleUserMessage(userMessage, chatId);
         send(messageToSend);
+    }
+
+    /**
+     * Обработать, если прислали файл
+     */
+    private File handleFileReceived(Document userDocument, String chatId)
+    {
+        File systemFile = null;
+        Document document = new Document();
+        document.setFileName(userDocument.getFileName());
+        document.setFileSize(userDocument.getFileSize());
+        document.setFileId(userDocument.getFileId());
+        GetFile getFile = new GetFile();
+        getFile.setFileId(document.getFileId());
+        try
+        {
+            org.telegram.telegrambots.meta.api.objects.File file = execute(getFile);
+            systemFile = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId + "/" + userDocument.getFileName());
+            downloadFile(file, systemFile);
+            //Здесь приходится загружать файл куда-то в память, иначе файл не передать дальше.
+            //Я конечно могу передавать org.telegram.telegrambots.meta.api.objects.File, но как потом вызвать
+            //метод downloadFile?
+        }
+        catch (TelegramApiException e)
+        {
+            e.printStackTrace();
+            send(new SendMessage(chatId, ConstantManager.BOT_BROKEN_INSIDE_MESSAGE));
+        }
+        return systemFile;
     }
 
     /**
@@ -117,7 +128,20 @@ public class TelegramBot extends TelegramLongPollingBot
         }
         catch (TelegramApiException e)
         {
-            System.out.println("Не удалось отправить сообщение. " + e.getMessage());
+            if (e.getMessage().equals("Error executing org.telegram.telegrambots.meta.api.methods.send.SendMessage query: [400] Bad Request: message is too long"))
+            {
+                SendMessage answer = (SendMessage) message;
+                answer.setText("Файл слишком большой для показа.");
+                try
+                {
+                    execute(answer);
+                }
+                catch (TelegramApiException ex)
+                {
+                    System.out.println("Не удалось отправить сообщение. " + ex.getMessage());
+                }
+            }
+
         }
     }
 }

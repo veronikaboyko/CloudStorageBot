@@ -82,31 +82,21 @@ public class FileManager
     }
 
     /**
-     * Проверяет, что присланный пользователем файл корректно сохранился.
+     * Сохранить присланный файл или проверить, что он уже существует (по идее он создается на уровне
+     * когда пришел update)
      */
-    public void checkCorrectFileSaved(File file, String chatId) throws IOException
+    public void createOrCheckIfCreatedFile(File file, String chatId) throws IOException
     {
         createUserDir(chatId);
-        final String fileName = file.getName();
-        Path filePath = getPathToFile(chatId, fileName);
-        if (!isValidFileName(fileName))
+        Path filePath = getPathToFile(chatId, file.getName());
+        if (!isValidFileName(file.getName()))
         {
-            Files.delete(filePath);
             throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
         }
-        if (!correctFileSize(file))
+        if (!Files.exists(filePath))
         {
-            Files.delete(filePath);
-            throw new IOException(ConstantManager.FILE_SIZE_OVERFLOW);
+            Files.createFile(filePath);
         }
-    }
-
-    /**
-     * Проверяет, что переданный файл размером <= 1MB.
-     */
-    private boolean correctFileSize(final File file)
-    {
-        return file.length() / 1048576 <= 1;
     }
 
     /**
@@ -125,6 +115,7 @@ public class FileManager
         }
         Files.delete(filePath);
     }
+
 
     /**
      * Переписываем содержимое файла

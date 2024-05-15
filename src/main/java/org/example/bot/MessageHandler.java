@@ -1,5 +1,6 @@
 package org.example.bot;
 
+import org.example.bot.user.FileMessage;
 import org.example.bot.user.StringMessage;
 import org.example.bot.user.UserMessage;
 import org.example.command.*;
@@ -14,6 +15,8 @@ import org.example.state.UserCommandState;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,8 +79,7 @@ public class MessageHandler
                 if (isCommand(potentialCommand))
                 {
                     final AbstractCommand currentCommand = commands.get(potentialCommand);
-                    if (!userCommandState.exists(chatId))
-                        userCommandState.add(chatId, currentCommand);
+                    userCommandState.add(chatId, currentCommand);
                     final State currentState = userCommandState.getCurrentState(chatId);
                     CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
                     if (result.canUpdate())
@@ -99,16 +101,27 @@ public class MessageHandler
                         return result.getDataForUser();
                     }
                 }
-            }
-            else
+            } else
             {
+                File userFile = ((FileMessage) messageFromUser).getContent();
+                if (!userCommandState.exists(chatId))
+                {
+                    //Надо его удалить. т.к. мы его создавали на уровень выше.
+                    Files.delete(userFile.toPath());
+                    return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
+                }
                 final AbstractCommand currentCommand = userCommandState.getCurrentCommand(chatId);
                 final State currentState = userCommandState.getCurrentState(chatId);
                 if (!(currentCommand instanceof SendFileCommand))
                 {
-                    return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
-                }
-                else {
+                    //Если команда SendFileCommand не была вызвана, значит нам просто отправили файл
+                    //Соответственно надо его удалить. т.к. мы его создавали.
+                    if (Files.exists(userFile.toPath()))
+                        Files.delete(userFile.toPath());
+                    //Знаем, что вернет false, поэтому возвращаем сразу результат
+                    return currentCommand.handle(messageFromUser,chatId,currentState).getDataForUser();
+                } else
+                {
                     CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
                     if (result.canUpdate())
                         userCommandState.updateCommandState(chatId);
@@ -125,7 +138,6 @@ public class MessageHandler
             return new SendMessage(chatId, "Внутрення ошибка работы бота");
         }
     }
-
 
     /**
      * Проверяет, является ли сообщение от пользователя командой

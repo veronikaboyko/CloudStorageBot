@@ -199,7 +199,8 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, null, false));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, null, false))
+        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, null, false)));
     }
 
     /**
@@ -210,7 +211,8 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "txt", false));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "txt", false))
+        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "txt", false)));
         assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "new", false));
     }
 
@@ -226,7 +228,22 @@ public class FileManagerTest
         fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
         assertEquals("test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "первый", true));
         assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "второй", true));
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "текст", true));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "текст", true)) ||
+                "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "текст", true)));
+    }
+
+    /**
+     * Тестируем, что метод createOrCheckIfCreatedFile() корректно работает
+     */
+    @Test
+    public void testCorrectWorkCreateOrCheckIfCreatedFile() throws IOException
+    {
+        fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
+        fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
+        fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
+        fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
+        assertTrue("test.txt\ntest1.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID,null,false)) ||
+                "test1.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID, null, false)));
     }
 
 }

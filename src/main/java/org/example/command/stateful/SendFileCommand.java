@@ -41,16 +41,19 @@ public class SendFileCommand extends AbstractCommand
                 }
                 if (!arguments[0].equals("/sendFile"))
                     return new CommandResult(new SendMessage(chatId, "Некорректная команда!"), false);
-                return new CommandResult(new SendMessage(chatId, "Отправьте файл с допустимыми расширениями: txt,json,xml"), true);
+                return new CommandResult(new SendMessage(chatId, ConstantManager.SEND_FILE), true);
             }
             case ON_DATA_FROM_USER ->
             {
                 if (!(messageFromUser instanceof FileMessage))
-                    return new CommandResult(new SendMessage(chatId, "Отправьте файл."), false);
+                    return new CommandResult(new SendMessage(chatId, ConstantManager.SEND_FILE), false);
                 final File file = ((FileMessage) messageFromUser).getContent();
+                //тут кстати вопрос, надо ли проверять размер файла. по идее он проверяется на несколько уровней выше.
+                //но если другой разработчик войдет в проект и будет использовать этот класс отдельно от всех вышестоящих уровней
+                //то будут проблемы.
                 try
                 {
-                    fileManager.checkCorrectFileSaved(file, chatId);
+                    fileManager.createOrCheckIfCreatedFile(file, chatId);
                     return new CommandResult(new SendMessage(chatId, "Файл успешно добавлен."), false);
                 }
                 catch (IOException exception)
