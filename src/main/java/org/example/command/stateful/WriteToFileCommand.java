@@ -1,5 +1,7 @@
 package org.example.command.stateful;
 
+import org.example.bot.user.StringMessage;
+import org.example.bot.user.UserMessage;
 import org.example.command.AbstractCommand;
 import org.example.command.CommandResult;
 import org.example.internal.ConstantManager;
@@ -26,9 +28,12 @@ public class WriteToFileCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser instanceof StringMessage))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = ((StringMessage) messageFromUser).getContent();
+        String[] arguments = getSplitArguments(stringContent);
         switch (state)
         {
             case ON_COMMAND_FROM_USER ->
@@ -56,7 +61,7 @@ public class WriteToFileCommand extends AbstractCommand
                 final String fileToWrite = fileNamesCasher.getData(chatId);
                 try
                 {
-                    fileManager.writeToFile(fileToWrite, chatId, messageFromUser);
+                    fileManager.writeToFile(fileToWrite, chatId, stringContent);
                     fileNamesCasher.clearUserCash(chatId);
                     return new CommandResult(new SendMessage(chatId, "Файл %s успешно сохранен.".formatted(fileToWrite)),true);
                 }

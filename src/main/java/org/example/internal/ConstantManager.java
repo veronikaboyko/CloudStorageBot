@@ -30,6 +30,7 @@ public class ConstantManager
     /**
      * Для исключений, когда файла с таким названием не существует
      */
+    public static final String NOT_UNDERSTAND = "Не понимаю вас! Вызовите /help для получения справки по боту.";
     public static final String NO_SUCH_FILE_EXISTS = "Файла с таким названием не существует.";
     /**
      * Для исключений, когда некорректно название файла
@@ -54,9 +55,11 @@ public class ConstantManager
      */
     public static final String BOT_BROKEN_INSIDE_MESSAGE = "Внутрення ошибка телеграм-бота." +
             " Если это сообщение возникло, напишите нам на почту: cloud_bot@yandex.ru";
+    public static final String FILE_SIZE_OVERFLOW = "Размер файла превышает 1МБ.";
 
     public static final String NO_SEARCH_STRING = "В качестве параметра введите искомую строку.";
 
     public static final String SEND_FILE = "Отправьте файл с расширением .txt, .json или .xml";
+    public static final String NOT_SUPPORT_FILE_FORMAT = "В этой команде не поддерживается формат отправки файлов.";
 
 }

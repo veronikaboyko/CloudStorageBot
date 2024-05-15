@@ -1,9 +1,13 @@
 package org.example.bot;
 
+import org.example.bot.user.StringMessage;
+import org.example.bot.user.UserMessage;
 import org.example.command.*;
 import org.example.command.stateful.EditFileCommand;
 import org.example.command.stateful.EditFileNameCommand;
+import org.example.command.stateful.SendFileCommand;
 import org.example.command.stateful.WriteToFileCommand;
+import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.UserCommandState;
@@ -51,6 +55,7 @@ public class MessageHandler
         commands.put("/findFileName", new FindFileNameCommand(fileManager));
         commands.put("/findFile", new FindFileCommand(fileManager));
         commands.put("/getFile", new GetFileCommand(fileManager));
+        commands.put("/sendFile", new SendFileCommand(fileManager));
     }
 
     /**
@@ -60,34 +65,55 @@ public class MessageHandler
      * @param chatId          ID чата.
      * @return Объект, который нужно отправить пользователю.
      */
-    public PartialBotApiMethod<?> handleUserMessage(String messageFromUser, String chatId)
+    public PartialBotApiMethod<?> handleUserMessage(UserMessage<?> messageFromUser, String chatId)
     {
         try
         {
-            final String potentialCommand = messageFromUser.split(" ")[0];
-            if (isCommand(potentialCommand))
+            if (messageFromUser instanceof StringMessage)
             {
-                final AbstractCommand currentCommand = commands.get(potentialCommand);
-                if (!userCommandState.exists(chatId))
-                    userCommandState.add(chatId, currentCommand);
-                final State currentState = userCommandState.getCurrentState(chatId);
-                CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
-                if (result.canUpdate())
-                    userCommandState.updateCommandState(chatId);
-                else
-                    userCommandState.removeUser(chatId);
-                return result.getDataForUser();
-            } else
-            {
-                if (!userCommandState.exists(chatId))
-                    return new SendMessage(chatId, "Не понимаю вас! Вызовите /help для получения справки по боту.");
-                else
+                final String stringContent = ((StringMessage) messageFromUser).getContent();
+                final String potentialCommand = stringContent.split(" ")[0];
+                if (isCommand(potentialCommand))
                 {
-                    final AbstractCommand command = userCommandState.getCurrentCommand(chatId);
-                    final State currentUserState = userCommandState.getCurrentState(chatId);
-                    CommandResult result = command.handle(messageFromUser, chatId, currentUserState);
+                    final AbstractCommand currentCommand = commands.get(potentialCommand);
+                    if (!userCommandState.exists(chatId))
+                        userCommandState.add(chatId, currentCommand);
+                    final State currentState = userCommandState.getCurrentState(chatId);
+                    CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
                     if (result.canUpdate())
                         userCommandState.updateCommandState(chatId);
+                    else
+                        userCommandState.removeUser(chatId);
+                    return result.getDataForUser();
+                } else
+                {
+                    if (!userCommandState.exists(chatId))
+                        return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
+                    else
+                    {
+                        final AbstractCommand command = userCommandState.getCurrentCommand(chatId);
+                        final State currentUserState = userCommandState.getCurrentState(chatId);
+                        CommandResult result = command.handle(messageFromUser, chatId, currentUserState);
+                        if (result.canUpdate())
+                            userCommandState.updateCommandState(chatId);
+                        return result.getDataForUser();
+                    }
+                }
+            }
+            else
+            {
+                final AbstractCommand currentCommand = userCommandState.getCurrentCommand(chatId);
+                final State currentState = userCommandState.getCurrentState(chatId);
+                if (!(currentCommand instanceof SendFileCommand))
+                {
+                    return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
+                }
+                else {
+                    CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
+                    if (result.canUpdate())
+                        userCommandState.updateCommandState(chatId);
+                    else
+                        userCommandState.removeUser(chatId);
                     return result.getDataForUser();
                 }
             }

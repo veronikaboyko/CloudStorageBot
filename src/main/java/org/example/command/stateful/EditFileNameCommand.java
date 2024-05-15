@@ -1,6 +1,8 @@
 package org.example.command.stateful;
 
 
+import org.example.bot.user.StringMessage;
+import org.example.bot.user.UserMessage;
 import org.example.command.AbstractCommand;
 import org.example.command.CommandResult;
 import org.example.internal.ConstantManager;
@@ -28,9 +30,12 @@ public class EditFileNameCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser instanceof StringMessage))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = ((StringMessage) messageFromUser).getContent();
+        String[] arguments = getSplitArguments(stringContent);
         switch (state)
         {
             case ON_COMMAND_FROM_USER ->
@@ -55,14 +60,14 @@ public class EditFileNameCommand extends AbstractCommand
             }
             case ON_DATA_FROM_USER ->
             {
-                if (!fileManager.isValidFileName(messageFromUser))
+                if (!fileManager.isValidFileName(stringContent))
                 {
                     return new CommandResult(new SendMessage(chatId,"Некорректное название файла."), false);
                 }
                 final String oldFileName = fileNamesCasher.getData(chatId);
                 try
                 {
-                    fileManager.editFileName(oldFileName, chatId, messageFromUser);
+                    fileManager.editFileName(oldFileName, chatId, stringContent);
                     fileNamesCasher.clearUserCash(chatId);
                     return new CommandResult(new SendMessage(chatId, oldFileName + " -> " + messageFromUser), true);
                 }
