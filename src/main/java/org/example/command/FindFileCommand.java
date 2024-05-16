@@ -1,6 +1,8 @@
 package org.example.command;
 
 
+import org.example.bot.user.StringMessage;
+import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
@@ -23,9 +25,12 @@ public class FindFileCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
     {
-        String searchString = messageFromUser.substring(10);
+        if (!(messageFromUser instanceof StringMessage))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = ((StringMessage) messageFromUser).getContent();
+        String searchString = stringContent.substring(10);
 
         if (searchString.isEmpty())
         {

@@ -1,5 +1,6 @@
 package org.example.command;
 
+import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
@@ -17,7 +18,7 @@ public class StartCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state)
+    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state)
     {
         return new CommandResult(new SendMessage(chatId, ConstantManager.HELP_MESSAGE),true);
     }

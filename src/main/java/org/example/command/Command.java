@@ -1,6 +1,8 @@
 package org.example.command;
 
+import org.example.bot.user.UserMessage;
 import org.example.state.State;
+
 import java.io.IOException;
 
 /**
@@ -13,5 +15,5 @@ public interface Command
     /**
      * Выполнить действие, запрашиваемое пользователем
      */
-    CommandResult handle(String messageFromUser, String chatId, State state) throws IOException;
+    CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException;
 }

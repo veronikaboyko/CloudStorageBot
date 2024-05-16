@@ -10,8 +10,6 @@ import java.util.Set;
 import java.io.*;
 
 
-
-
 /**
  * Класс, который отвечает за операции с файлами пользователя.
  */
@@ -19,11 +17,15 @@ public class FileManager
 {
     private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
     private String directoryToWork = ConstantManager.USER_DATA_DIRECTORY; //по умолчанию
+
     public FileManager(String directoryToWork)
     {
         this.directoryToWork = directoryToWork;
     }
-    public FileManager(){}
+
+    public FileManager()
+    {
+    }
 
     /**
      * Метод для создания директории пользователя, в которой будут храниться его личные файлы.
@@ -63,7 +65,7 @@ public class FileManager
      * @param chatId   ID пользователя.
      * @throws IOException Исключение, если возникла ошибка при создании файла.
      */
-    public void createFile(String fileName, String chatId) throws IOException
+    public void checkCorrectFileSaved(String fileName, String chatId) throws IOException
     {
         createUserDir(chatId);
         Path filePath = getPathToFile(chatId, fileName);
@@ -77,6 +79,24 @@ public class FileManager
             throw new IOException("Файл с таким именем уже существует.");
         }
         Files.createFile(filePath);
+    }
+
+    /**
+     * Сохранить присланный файл или проверить, что он уже существует (по идее он создается на уровне
+     * когда пришел update)
+     */
+    public void createOrCheckIfCreatedFile(File file, String chatId) throws IOException
+    {
+        createUserDir(chatId);
+        Path filePath = getPathToFile(chatId, file.getName());
+        if (!isValidFileName(file.getName()))
+        {
+            throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
+        }
+        if (!Files.exists(filePath))
+        {
+            Files.createFile(filePath);
+        }
     }
 
     /**
@@ -95,6 +115,7 @@ public class FileManager
         }
         Files.delete(filePath);
     }
+
 
     /**
      * Переписываем содержимое файла
@@ -196,8 +217,8 @@ public class FileManager
      * Возвращает список файлов пользователя, в названии которых встретилась искомая строка
      * Если searchString равна null или пустая, возвращает список всех файлов пользователя
      *
-     * @param chatId Идентификатор пользователя
-     * @param searchString Искомая строка
+     * @param chatId        Идентификатор пользователя
+     * @param searchString  Искомая строка
      * @param searchContent Параметр, определяющий, искать ли в содержимом файлов
      * @return Список всех файлов пользователя в виде строки
      */
@@ -215,14 +236,16 @@ public class FileManager
             }
             for (File file : files)
             {
-                if (file.isFile() && (searchString == null|| file.getName().contains(searchString) || searchContent ))
+                if (file.isFile() && (searchString == null || file.getName().contains(searchString) || searchContent))
                 {
                     if (searchContent)
                     {
-                        if (fileContainsString(file, searchString)) {
+                        if (fileContainsString(file, searchString))
+                        {
                             userFileList.append(file.getName()).append("\n");
                         }
-                    } else {
+                    } else
+                    {
                         userFileList.append(file.getName()).append("\n");
                     }
                 }
@@ -242,12 +265,14 @@ public class FileManager
     /**
      * Проверяет, содержит ли файл искомую строку
      *
-     * @param file Файл, содержимое которого проверяется
+     * @param file         Файл, содержимое которого проверяется
      * @param searchString Искомая строка
      * @return true, если содержит, иначе false
      */
-    private boolean fileContainsString(File file, String searchString) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    private boolean fileContainsString(File file, String searchString) throws IOException
+    {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+        {
             return reader.lines().anyMatch(line -> line.contains(searchString));
         }
     }
@@ -257,7 +282,7 @@ public class FileManager
      * Получить файл
      *
      * @param fileName Имя файла, который нужно получить
-     * @param chatId Идентификатор пользователя
+     * @param chatId   Идентификатор пользователя
      * @return Нужный файл
      */
     public File getFile(String fileName, String chatId) throws IOException

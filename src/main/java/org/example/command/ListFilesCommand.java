@@ -1,5 +1,6 @@
 package org.example.command;
 
+import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
@@ -22,7 +23,7 @@ public class ListFilesCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
     {
         try {
             String listFiles = fileManager.getListFiles(chatId, null, false);
