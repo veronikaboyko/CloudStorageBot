@@ -26,7 +26,7 @@ public class ListFilesCommand extends AbstractCommand
     public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
     {
         try {
-            String listFiles = fileManager.getListFiles(chatId, null, false);
+            String listFiles = fileManager.getListFiles(chatId);
             return new CommandResult(new SendMessage(chatId, "Список ваших файлов:\n" + listFiles), true);
         } catch (IOException e) {
             if (e.getMessage().equals(ConstantManager.NO_USER_FILES_FOUND))

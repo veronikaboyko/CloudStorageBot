@@ -213,52 +213,95 @@ public class FileManager
         return fileName.substring(dotIndex);
     }
 
+
     /**
-     * Возвращает список файлов пользователя, в названии которых встретилась искомая строка
-     * Если searchString равна null или пустая, возвращает список всех файлов пользователя
-     *
-     * @param chatId        Идентификатор пользователя
-     * @param searchString  Искомая строка
-     * @param searchContent Параметр, определяющий, искать ли в содержимом файлов
-     * @return Список всех файлов пользователя в виде строки
+     * Возвращает все файлы пользователя из его директории
+     * @param chatId Идентификатор пользователя
+     * @return массив, содержащий все пользовательские файлы
+     * @throws IOException если никаких файлов нет
      */
-    public String getListFiles(final String chatId, final String searchString, boolean searchContent) throws IOException
+    private File[] getAllUserFiles(final String chatId) throws IOException
     {
-        final StringBuilder userFileList = new StringBuilder();
         File currentUserDirectory = new File(getFileNameByID(chatId));
+        File[] files;
         if (currentUserDirectory.isDirectory())
         {
-            File[] files = currentUserDirectory.listFiles();
-
+            files = currentUserDirectory.listFiles();
             if (files == null)
             {
                 throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
             }
-            for (File file : files)
-            {
-                if (file.isFile() && (searchString == null || file.getName().contains(searchString) || searchContent))
-                {
-                    if (searchContent)
-                    {
-                        if (fileContainsString(file, searchString))
-                        {
-                            userFileList.append(file.getName()).append("\n");
-                        }
-                    } else
-                    {
-                        userFileList.append(file.getName()).append("\n");
-                    }
-                }
-            }
-            if (userFileList.isEmpty())
-            {
-                throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
-            }
-            return userFileList.toString();
+            return files;
         } else
         {
             throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
         }
+    }
+
+
+    /**
+     * Возвращает список всех файлов пользователя
+     *
+     * @param chatId        Идентификатор пользователя
+     * @return Список всех файлов пользователя в виде строки
+     */
+    public String getListFiles(final String chatId) throws IOException
+    {
+        final StringBuilder userFileList = new StringBuilder();
+        File[] files = getAllUserFiles(chatId);
+        for (File file : files)
+        {
+            if (file.isFile())
+                userFileList.append(file.getName()).append("\n");
+        }
+        return userFileList.toString();
+    }
+
+    /**
+     * Возвращает список всех файлов пользователя, в названии которых встретилась искомая строка
+     * @param chatId Идентификатор пользователя
+     * @param searchString Искомая строка
+     * @return Список всех файлов пользователя в виде строки
+     * @throws IOException если нет таких файлов
+     */
+    public String findFilesByName(final String chatId, String searchString) throws IOException
+    {
+        final StringBuilder userFileList = new StringBuilder();
+        File[] files = getAllUserFiles(chatId);
+        for (File file : files)
+        {
+            if (file.isFile() && file.getName().contains(searchString))
+                userFileList.append(file.getName()).append("\n");
+        }
+        if (userFileList.isEmpty())
+        {
+            throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
+        }
+        return userFileList.toString();
+    }
+
+
+    /**
+     * Возвращает список всех файлов пользователя, в содержании которых встретилась искомая строка
+     * @param chatId Идентификатор пользователя
+     * @param searchString Искомая строка
+     * @return Список всех файлов пользователя в виде строки
+     * @throws IOException если нет таких файлов
+     */
+    public String findFilesByContent(final String chatId, String searchString) throws IOException
+    {
+        final StringBuilder userFileList = new StringBuilder();
+        File[] files = getAllUserFiles(chatId);
+        for (File file : files)
+        {
+            if (file.isFile() && fileContainsString(file, searchString))
+                userFileList.append(file.getName()).append("\n");
+        }
+        if (userFileList.isEmpty())
+        {
+            throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
+        }
+        return userFileList.toString();
     }
 
 

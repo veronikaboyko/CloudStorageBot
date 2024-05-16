@@ -199,8 +199,8 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, null, false))
-        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, null, false)));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2))
+        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2)));
     }
 
     /**
@@ -211,9 +211,9 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "txt", false))
-        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "txt", false)));
-        assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "new", false));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.findFilesByName(TEST_CHAT_ID2, "txt"))
+        || "new_test.txt\ntest.txt\n".equals(fileManager.findFilesByName(TEST_CHAT_ID2, "txt")));
+        assertEquals("new_test.txt\n", fileManager.findFilesByName(TEST_CHAT_ID2, "new"));
     }
 
     /**
@@ -226,10 +226,10 @@ public class FileManagerTest
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
         fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "первый текст");
         fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
-        assertEquals("test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "первый", true));
-        assertEquals("new_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2, "второй", true));
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "текст", true)) ||
-                "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2, "текст", true)));
+        assertEquals("test.txt\n", fileManager.findFilesByContent(TEST_CHAT_ID2, "первый"));
+        assertEquals("new_test.txt\n", fileManager.findFilesByContent(TEST_CHAT_ID2, "второй"));
+        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.findFilesByContent(TEST_CHAT_ID2, "текст")) ||
+                "new_test.txt\ntest.txt\n".equals(fileManager.findFilesByContent(TEST_CHAT_ID2, "текст")));
     }
 
     /**
@@ -242,8 +242,8 @@ public class FileManagerTest
         fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
         fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
         fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
-        assertTrue("test.txt\ntest1.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID,null,false)) ||
-                "test1.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID, null, false)));
+        assertTrue("test.txt\ntest1.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID)) ||
+                "test1.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID)));
     }
 
 }
