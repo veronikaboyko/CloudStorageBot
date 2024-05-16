@@ -38,7 +38,7 @@ public class FindFileCommand extends AbstractCommand
         }
         try
         {
-            String listFiles = fileManager.getListFiles(chatId, searchString, true);
+            String listFiles = fileManager.findFilesByContent(chatId, searchString);
             return new CommandResult(new SendMessage(chatId, "По запросу “%s” найдены следующие файлы:\n".formatted(searchString) + listFiles), true);
         }
         catch (IOException e)
