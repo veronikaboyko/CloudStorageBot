@@ -1,5 +1,6 @@
 package org.example.command;
 
+import javassist.NotFoundException;
 import org.example.bot.user.StringMessage;
 import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
@@ -44,12 +45,9 @@ public class GetFileCommand extends AbstractCommand
             File fileToSend = fileManager.getFile(fileName, chatId);
             return new CommandResult(new SendDocument(chatId, new InputFile(fileToSend)), true);
         }
-        catch (IOException e)
-        {
-            if (e.getMessage().equals(ConstantManager.NO_SUCH_FILE_EXISTS))
-                return new CommandResult(new SendMessage(chatId, "Не удалось отправить файл %s. ".formatted(fileName)
-                        + ConstantManager.NO_SUCH_FILE_EXISTS), true);
-            throw new IOException("Не удалось отправить файл %s. ".formatted(fileName) + e.getMessage(), e);
+        catch (NotFoundException e) {
+            return new CommandResult(new SendMessage(chatId, "Не удалось отправить файл %s. ".formatted(fileName)
+                    + ConstantManager.NO_SUCH_FILE_EXISTS), true);
         }
     }
 

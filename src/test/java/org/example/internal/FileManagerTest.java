@@ -1,5 +1,6 @@
 package org.example.internal;
 
+import javassist.NotFoundException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class FileManagerTest
 {
@@ -195,55 +197,88 @@ public class FileManagerTest
      * Тестирует получение списка всех файлов
      */
     @Test
-    public void testListFiles() throws IOException
+    public void testListFiles() throws IOException, NotFoundException
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2))
-        || "new_test.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID2)));
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2));
     }
+
+
+    /**
+     * Тестирует получение списка всех файлов (файлы не найдены)
+     */
+    @Test
+    public void testListFilesNotFound() throws IOException, NotFoundException
+    {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.getListFiles(TEST_CHAT_ID2));
+        assertEquals("У вас пока что нет файлов.", exception.getMessage());
+    }
+
 
     /**
      * Тестирует получение списка всех файлов с найденной подстрокой в названии
      */
     @Test
-    public void testListFilesSearchName() throws IOException
+    public void testListFilesSearchName() throws IOException, NotFoundException
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.findFilesByName(TEST_CHAT_ID2, "txt"))
-        || "new_test.txt\ntest.txt\n".equals(fileManager.findFilesByName(TEST_CHAT_ID2, "txt")));
-        assertEquals("new_test.txt\n", fileManager.findFilesByName(TEST_CHAT_ID2, "new"));
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "txt", false));
+        assertEquals("new_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "new", false));
+    }
+
+    /**
+     * Тестирует получение списка всех файлов с найденной подстрокой в названии (файлы не найдены)
+     */
+    @Test
+    public void testListFilesSearchNameNotFound() throws IOException, NotFoundException
+    {
+        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.findFilesBySearchString(TEST_CHAT_ID2, "rrr", false));
+        assertEquals("По запросу “rrr” не найдено файлов.", exception.getMessage());
     }
 
     /**
      * Тестирует получение списка всех файлов с найденной подстрокой в содержании
      */
     @Test
-    public void testListFilesSearchContent() throws IOException
+    public void testListFilesSearchContent() throws IOException, NotFoundException
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
         fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "первый текст");
         fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
-        assertEquals("test.txt\n", fileManager.findFilesByContent(TEST_CHAT_ID2, "первый"));
-        assertEquals("new_test.txt\n", fileManager.findFilesByContent(TEST_CHAT_ID2, "второй"));
-        assertTrue("test.txt\nnew_test.txt\n".equals(fileManager.findFilesByContent(TEST_CHAT_ID2, "текст")) ||
-                "new_test.txt\ntest.txt\n".equals(fileManager.findFilesByContent(TEST_CHAT_ID2, "текст")));
+        assertEquals("test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "первый", true));
+        assertEquals("new_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "второй", true));
+        assertEquals("test.txt\nnew_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "текст", true));
+    }
+
+    /**
+     * Тестирует получение списка всех файлов с найденной подстрокой в содержании (файлы не найдены)
+     */
+    @Test
+    public void testListFilesSearchContentNotFound() throws IOException, NotFoundException
+    {
+        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "текст");
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.findFilesBySearchString(TEST_CHAT_ID2, "rrr", true));
+        assertEquals("По запросу “rrr” не найдено файлов.", exception.getMessage());
     }
 
     /**
      * Тестируем, что метод createOrCheckIfCreatedFile() корректно работает
      */
     @Test
-    public void testCorrectWorkCreateOrCheckIfCreatedFile() throws IOException
+    public void testCorrectWorkCreateOrCheckIfCreatedFile() throws IOException, NotFoundException
     {
         fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
         fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
         fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
         fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
-        assertTrue("test.txt\ntest1.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID)) ||
-                "test1.txt\ntest.txt\n".equals(fileManager.getListFiles(TEST_CHAT_ID)));
+
+        assertEquals("test1.txt\ntest.txt\n", fileManager.getListFiles(TEST_CHAT_ID));
     }
 
 }
