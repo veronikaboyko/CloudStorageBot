@@ -1,5 +1,6 @@
 package org.example.command;
 
+import javassist.NotFoundException;
 import org.example.bot.user.StringMessage;
 import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
@@ -38,14 +39,12 @@ public class FindFileNameCommand extends AbstractCommand
         final String searchString = arguments[1];
         try
         {
-            String listFiles = fileManager.findFilesByName(chatId, searchString);
+            String listFiles = fileManager.findFilesBySearchString(chatId, searchString, false);
             return new CommandResult(new SendMessage(chatId, "По запросу “%s” найдены следующие файлы:\n".formatted(searchString) + listFiles), true);
         }
-        catch (IOException e)
+        catch (NotFoundException e)
         {
-            if (e.getMessage().equals(ConstantManager.NO_USER_FILES_FOUND))
-                return new CommandResult(new SendMessage(chatId, "По запросу “%s” не найдено файлов.".formatted(searchString)), true);
-            throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
+            return new CommandResult(new SendMessage(chatId, e.getMessage()), true);
         }
     }
 }

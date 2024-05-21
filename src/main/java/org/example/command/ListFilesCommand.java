@@ -1,5 +1,6 @@
 package org.example.command;
 
+import javassist.NotFoundException;
 import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
@@ -28,10 +29,8 @@ public class ListFilesCommand extends AbstractCommand
         try {
             String listFiles = fileManager.getListFiles(chatId);
             return new CommandResult(new SendMessage(chatId, "Список ваших файлов:\n" + listFiles), true);
-        } catch (IOException e) {
-            if (e.getMessage().equals(ConstantManager.NO_USER_FILES_FOUND))
-                return new CommandResult(new SendMessage(chatId, "У вас пока еще нет файлов."), true);
-            throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
+        } catch (NotFoundException e) {
+            return new CommandResult(new SendMessage(chatId, e.getMessage()), true);
         }
     }
 }

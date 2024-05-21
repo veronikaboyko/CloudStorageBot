@@ -72,16 +72,16 @@ public class MessageHandler
     {
         try
         {
-            if (messageFromUser instanceof StringMessage)
+            if (messageFromUser instanceof StringMessage stringMessageFromUser)
             {
-                final String stringContent = ((StringMessage) messageFromUser).getContent();
+                final String stringContent = stringMessageFromUser.getContent();
                 final String potentialCommand = stringContent.split(" ")[0];
                 if (isCommand(potentialCommand))
                 {
                     final AbstractCommand currentCommand = commands.get(potentialCommand);
                     userCommandState.add(chatId, currentCommand);
                     final State currentState = userCommandState.getCurrentState(chatId);
-                    CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
+                    CommandResult result = currentCommand.handle(stringMessageFromUser, chatId, currentState);
                     if (result.canUpdate())
                         userCommandState.updateCommandState(chatId);
                     else
@@ -95,7 +95,7 @@ public class MessageHandler
                     {
                         final AbstractCommand command = userCommandState.getCurrentCommand(chatId);
                         final State currentUserState = userCommandState.getCurrentState(chatId);
-                        CommandResult result = command.handle(messageFromUser, chatId, currentUserState);
+                        CommandResult result = command.handle(stringMessageFromUser, chatId, currentUserState);
                         if (result.canUpdate())
                             userCommandState.updateCommandState(chatId);
                         return result.getDataForUser();
@@ -103,31 +103,33 @@ public class MessageHandler
                 }
             } else
             {
-                File userFile = ((FileMessage) messageFromUser).getContent();
-                if (!userCommandState.exists(chatId))
-                {
-                    //Надо его удалить. т.к. мы его создавали на уровень выше.
-                    Files.delete(userFile.toPath());
-                    return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
-                }
-                final AbstractCommand currentCommand = userCommandState.getCurrentCommand(chatId);
-                final State currentState = userCommandState.getCurrentState(chatId);
-                if (!(currentCommand instanceof SendFileCommand))
-                {
-                    //Если команда SendFileCommand не была вызвана, значит нам просто отправили файл
-                    //Соответственно надо его удалить. т.к. мы его создавали.
-                    if (Files.exists(userFile.toPath()))
+                if (messageFromUser instanceof FileMessage fileMessageFromUser){
+                    File userFile = fileMessageFromUser.getContent();
+                    if (!userCommandState.exists(chatId))
+                    {
+                        //Надо его удалить. т.к. мы его создавали на уровень выше.
                         Files.delete(userFile.toPath());
-                    //Знаем, что вернет false, поэтому возвращаем сразу результат
-                    return currentCommand.handle(messageFromUser,chatId,currentState).getDataForUser();
-                } else
-                {
-                    CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
-                    if (result.canUpdate())
-                        userCommandState.updateCommandState(chatId);
-                    else
-                        userCommandState.removeUser(chatId);
-                    return result.getDataForUser();
+                        return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
+                    }
+                    final AbstractCommand currentCommand = userCommandState.getCurrentCommand(chatId);
+                    final State currentState = userCommandState.getCurrentState(chatId);
+                    if (!(currentCommand instanceof SendFileCommand))
+                    {
+                        //Если команда SendFileCommand не была вызвана, значит нам просто отправили файл
+                        //Соответственно надо его удалить. т.к. мы его создавали.
+                        if (Files.exists(userFile.toPath()))
+                            Files.delete(userFile.toPath());
+                        //Знаем, что вернет false, поэтому возвращаем сразу результат
+                        return currentCommand.handle(messageFromUser,chatId,currentState).getDataForUser();
+                    } else
+                    {
+                        CommandResult result = currentCommand.handle(messageFromUser, chatId, currentState);
+                        if (result.canUpdate())
+                            userCommandState.updateCommandState(chatId);
+                        else
+                            userCommandState.removeUser(chatId);
+                        return result.getDataForUser();
+                    }
                 }
             }
         }
@@ -137,6 +139,7 @@ public class MessageHandler
             exception.printStackTrace();
             return new SendMessage(chatId, "Внутрення ошибка работы бота");
         }
+        return null;
     }
 
     /**
