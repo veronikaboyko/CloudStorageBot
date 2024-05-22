@@ -17,6 +17,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+/**
+ * Команда /sendFile
+ */
 public class SendFileCommand extends AbstractCommand
 {
     private final FileManager fileManager;
@@ -55,38 +58,33 @@ public class SendFileCommand extends AbstractCommand
                 final Document userDocument = messageFromUser.getDocument();
                 if (userDocument.getFileSize() / ConstantManager.ONE_MB > 1)
                     return new CommandResult(new SendMessage(chatId, ConstantManager.FILE_SIZE_OVERFLOW), false);
-                if (handleFileReceived(userDocument, chatId))
-                    return new CommandResult(new SendMessage(chatId, "Файл успешно загружен."),true);
-                else
-                    return new CommandResult(new SendMessage(chatId, "Проблема с загрузкой файла, попробуйте другой файл."),false);
+                File systemFile;
+                Document document = new Document();
+                final String fileName = userDocument.getFileName();
+                if (!ConstantManager.ALLOWED_EXTENSIONS.contains("."+fileName.split("\\.")[1]))
+                    return new CommandResult(new SendMessage(chatId, ConstantManager.ALLOWED_EXTENSIONS_MISTAKE), false);
+                document.setFileName(fileName);
+                document.setFileSize(userDocument.getFileSize());
+                document.setFileId(userDocument.getFileId());
+                GetFile getFile = new GetFile();
+                getFile.setFileId(document.getFileId());
+                try
+                {
+                    org.telegram.telegrambots.meta.api.objects.File file = telegramBot.execute(getFile);
+                    systemFile = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId + "/" + userDocument.getFileName());
+                    telegramBot.downloadFile(file, systemFile);
+                    if (Files.exists(systemFile.toPath()))
+                        return new CommandResult(new SendMessage(chatId, "Файл успешно сохранен."), true);
+                    else
+                        return new CommandResult(new SendMessage(chatId, "Ошибка сохранения файла. Попробуйте отправить еще раз."), true);
+                }
+                catch (TelegramApiException e)
+                {
+                    e.printStackTrace();
+                    throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
+                }
             }
             default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
-        }
-    }
-
-    /**
-     * Сохраняет присланный пользователем файл в систему
-     */
-    private boolean handleFileReceived(Document userDocument, String chatId) throws IOException
-    {
-        File systemFile;
-        Document document = new Document();
-        document.setFileName(userDocument.getFileName());
-        document.setFileSize(userDocument.getFileSize());
-        document.setFileId(userDocument.getFileId());
-        GetFile getFile = new GetFile();
-        getFile.setFileId(document.getFileId());
-        try
-        {
-            org.telegram.telegrambots.meta.api.objects.File file = telegramBot.execute(getFile);
-            systemFile = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId + "/" + userDocument.getFileName());
-            telegramBot.downloadFile(file, systemFile);
-            return Files.exists(systemFile.toPath());
-        }
-        catch (TelegramApiException e)
-        {
-            e.printStackTrace();
-            throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
     }
 }

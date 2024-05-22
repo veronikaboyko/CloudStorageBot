@@ -1,5 +1,7 @@
 package org.example.internal;
 
+import java.util.Set;
+
 /**
  * Хранит в себе константы проекта
  */
@@ -62,6 +64,12 @@ public class ConstantManager
      * Один мегабайт
      */
     public static final int ONE_MB = 1048576;
+    public static final int MAX_TELEGRAM_MESSAGE_SIZE = 4095;
+
+    /**
+     * Допустимые расширения
+     */
+    public static final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
 
     public static final String SEND_FILE = "Отправьте файл с расширением .txt, .json или .xml";
     public static final String NOT_SUPPORT_FILE_FORMAT = "В этой команде не поддерживается формат отправки файлов.";

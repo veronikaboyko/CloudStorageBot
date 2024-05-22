@@ -49,6 +49,8 @@ public class ViewFileContentCommand extends AbstractCommand
         try
         {
             final String fileContent = fileManager.getFileContent(fileName, chatId);
+            if (fileContent.length() > ConstantManager.MAX_TELEGRAM_MESSAGE_SIZE)
+                return new CommandResult(new SendMessage(chatId, "Файл слишком велик."), true);
             if (!fileContent.isEmpty())
                 return new CommandResult(new SendMessage(chatId, fileContent), true);
             else

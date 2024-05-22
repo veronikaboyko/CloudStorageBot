@@ -17,7 +17,6 @@ import java.io.*;
  */
 public class FileManager
 {
-    private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
     private String directoryToWork = ConstantManager.USER_DATA_DIRECTORY; //по умолчанию
 
     public FileManager(String directoryToWork)
@@ -67,7 +66,7 @@ public class FileManager
      * @param chatId   ID пользователя.
      * @throws IOException Исключение, если возникла ошибка при создании файла.
      */
-    public void checkCorrectFileSaved(String fileName, String chatId) throws IOException
+    public void createFile(String fileName, String chatId) throws IOException
     {
         createUserDir(chatId);
         Path filePath = getPathToFile(chatId, fileName);
@@ -81,24 +80,6 @@ public class FileManager
             throw new IOException("Файл с таким именем уже существует.");
         }
         Files.createFile(filePath);
-    }
-
-    /**
-     * Сохранить присланный файл или проверить, что он уже существует (по идее он создается на уровне
-     * когда пришел update)
-     */
-    public void createOrCheckIfCreatedFile(File file, String chatId) throws IOException
-    {
-        createUserDir(chatId);
-        Path filePath = getPathToFile(chatId, file.getName());
-        if (!isValidFileName(file.getName()))
-        {
-            throw new IOException("Неверное расширение файла. Допустимые расширения: txt, json, xml.");
-        }
-        if (!Files.exists(filePath))
-        {
-            Files.createFile(filePath);
-        }
     }
 
     /**
@@ -165,7 +146,7 @@ public class FileManager
     public boolean isValidFileName(String fileName)
     {
         String fileExtension = getFileExtension(fileName);
-        return ALLOWED_EXTENSIONS.contains(fileExtension);
+        return ConstantManager.ALLOWED_EXTENSIONS.contains(fileExtension);
     }
 
     /**
@@ -256,10 +237,10 @@ public class FileManager
         for (File file : files)
         {
             if (file.isFile())
-                listFiles.add(file.getName()+"\n");
+                listFiles.add(file.getName() + "\n");
         }
         Collections.sort(listFiles);
-        return StringUtils.join(listFiles,"");
+        return StringUtils.join(listFiles, "");
     }
 
 
@@ -288,7 +269,7 @@ public class FileManager
             throw new NotFoundException("По запросу “%s” не найдено файлов.".formatted(searchString));
         }
         Collections.sort(listFiles);
-        return StringUtils.join(listFiles,"");
+        return StringUtils.join(listFiles, "");
     }
 
 

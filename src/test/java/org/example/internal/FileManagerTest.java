@@ -1,7 +1,6 @@
 package org.example.internal;
 
 import javassist.NotFoundException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -46,10 +44,10 @@ public class FileManagerTest
      * @throws IOException если происходит ошибка ввода-вывода
      */
     @Test
-    public void testCheckCorrectFileSaved() throws IOException
+    public void testCreateFile() throws IOException
     {
 
-        fileManager.checkCorrectFileSaved("testCreateFile1.txt", TEST_CHAT_ID);
+        fileManager.createFile("testCreateFile1.txt", TEST_CHAT_ID);
         Path filePath = Paths.get(WORKING_DIRECTORY + "user_" + TEST_CHAT_ID, "testCreateFile1.txt");
         assertTrue(Files.exists(filePath));
         fileManager.deleteFile("testCreateFile1.txt", TEST_CHAT_ID);
@@ -61,9 +59,9 @@ public class FileManagerTest
      * @throws IOException если происходит ошибка ввода-вывода
      */
     @Test
-    public void testCheckCorrectFileSavedWithInvalidExtension()
+    public void testCreateFileWithInvalidExtension()
     {
-        IOException exception = assertThrows(IOException.class, () -> fileManager.checkCorrectFileSaved("testFile.jpg", TEST_CHAT_ID));
+        IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.jpg", TEST_CHAT_ID));
         assertEquals("Неверное расширение файла. Допустимые расширения: txt, json, xml.",exception.getMessage());
     }
 
@@ -73,10 +71,10 @@ public class FileManagerTest
      * @throws IOException если происходит ошибка ввода-вывода
      */
     @Test
-    public void testCheckCorrectFileSavedThatAlreadyExists() throws IOException
+    public void testCreateFileThatAlreadyExists() throws IOException
     {
-        fileManager.checkCorrectFileSaved("testFile.txt", TEST_CHAT_ID);
-        IOException exception = assertThrows(IOException.class, () -> fileManager.checkCorrectFileSaved("testFile.txt", TEST_CHAT_ID));
+        fileManager.createFile("testFile.txt", TEST_CHAT_ID);
+        IOException exception = assertThrows(IOException.class, () -> fileManager.createFile("testFile.txt", TEST_CHAT_ID));
         assertEquals("Файл с таким именем уже существует.", exception.getMessage());
         fileManager.deleteFile("testFile.txt", TEST_CHAT_ID);
 
@@ -90,7 +88,7 @@ public class FileManagerTest
     @Test
     public void testDeleteFile() throws IOException
     {
-        fileManager.checkCorrectFileSaved("testDeleteFile2.txt", TEST_CHAT_ID);
+        fileManager.createFile("testDeleteFile2.txt", TEST_CHAT_ID);
         Path filePath = Paths.get(WORKING_DIRECTORY + "user_" + TEST_CHAT_ID,
                 "testDeleteFile2.txt");
         assertTrue(Files.exists(filePath));
@@ -106,7 +104,7 @@ public class FileManagerTest
     @Test
     public void testDeleteFileThatDoesNotAlreadyExists() throws IOException
     {
-        fileManager.checkCorrectFileSaved("testDelFile.txt", TEST_CHAT_ID);
+        fileManager.createFile("testDelFile.txt", TEST_CHAT_ID);
         fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID);
         IOException exception = assertThrows(IOException.class, () -> fileManager.deleteFile("testDelFile.txt", TEST_CHAT_ID));
         assertEquals("Файла с таким названием не существует.", exception.getMessage());
@@ -119,7 +117,7 @@ public class FileManagerTest
     public void testEditFile() throws IOException
     {
 
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
         String newText = "New text content";
         fileManager.editFile(TEST_FILE_NAME, TEST_CHAT_ID2, newText);
         assertEquals("New text content", Files.readString(getFilePath(TEST_FILE_NAME)));
@@ -134,7 +132,7 @@ public class FileManagerTest
     @Test
     public void testEditFileName() throws IOException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.editFileName(TEST_FILE_NAME, TEST_CHAT_ID2, TEST_NEW_FILE_NAME);
         assertTrue(Files.exists(getFilePath(TEST_NEW_FILE_NAME)));
         assertFalse(Files.exists(getFilePath(TEST_FILE_NAME)));
@@ -203,8 +201,8 @@ public class FileManagerTest
     @Test
     public void testListFiles() throws IOException, NotFoundException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
-        fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
         assertEquals("new_test.txt\ntest.txt\n", fileManager.getListFiles(TEST_CHAT_ID2));
     }
 
@@ -226,8 +224,8 @@ public class FileManagerTest
     @Test
     public void testListFilesSearchName() throws IOException, NotFoundException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
-        fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
         List<String> expected = new ArrayList<>(List.of("test.txt\nnew_test.txt\n".split("\n")));
         List<String> actual = new ArrayList<>(List.of(fileManager.findFilesBySearchString(TEST_CHAT_ID2, "txt", false)
                 .split("\n")));
@@ -242,7 +240,7 @@ public class FileManagerTest
     @Test
     public void testListFilesSearchNameNotFound() throws IOException, NotFoundException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
         NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.findFilesBySearchString(TEST_CHAT_ID2, "rrr", false));
         assertEquals("По запросу “rrr” не найдено файлов.", exception.getMessage());
     }
@@ -253,8 +251,8 @@ public class FileManagerTest
     @Test
     public void testListFilesSearchContent() throws IOException, NotFoundException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
-        fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
         fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "первый текст");
         fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
         assertEquals("test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "первый", true));
@@ -268,7 +266,7 @@ public class FileManagerTest
     @Test
     public void testListFilesSearchContentNotFound() throws IOException, NotFoundException
     {
-        fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
+        fileManager.createFile(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.writeToFile(TEST_FILE_NAME, TEST_CHAT_ID2, "текст");
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.findFilesBySearchString(TEST_CHAT_ID2, "rrr", true));
