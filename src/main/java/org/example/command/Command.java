@@ -1,7 +1,7 @@
 package org.example.command;
 
-import org.example.bot.user.UserMessage;
 import org.example.state.State;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -15,5 +15,5 @@ public interface Command
     /**
      * Выполнить действие, запрашиваемое пользователем
      */
-    CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException;
+    CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException;
 }
