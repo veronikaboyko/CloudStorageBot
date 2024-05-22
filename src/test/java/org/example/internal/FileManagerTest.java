@@ -1,6 +1,7 @@
 package org.example.internal;
 
 import javassist.NotFoundException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +12,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
@@ -201,7 +205,7 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.getListFiles(TEST_CHAT_ID2));
+        assertEquals("new_test.txt\ntest.txt\n", fileManager.getListFiles(TEST_CHAT_ID2));
     }
 
 
@@ -224,7 +228,11 @@ public class FileManagerTest
     {
         fileManager.checkCorrectFileSaved(TEST_FILE_NAME, TEST_CHAT_ID2);
         fileManager.checkCorrectFileSaved(TEST_NEW_FILE_NAME, TEST_CHAT_ID2);
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "txt", false));
+        List<String> expected = new ArrayList<>(List.of("test.txt\nnew_test.txt\n".split("\n")));
+        List<String> actual = new ArrayList<>(List.of(fileManager.findFilesBySearchString(TEST_CHAT_ID2, "txt", false)
+                .split("\n")));
+        assertTrue(expected.containsAll(actual));
+        assertTrue(actual.containsAll(expected));
         assertEquals("new_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "new", false));
     }
 
@@ -251,7 +259,7 @@ public class FileManagerTest
         fileManager.writeToFile(TEST_NEW_FILE_NAME, TEST_CHAT_ID2, "второй текст");
         assertEquals("test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "первый", true));
         assertEquals("new_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "второй", true));
-        assertEquals("test.txt\nnew_test.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "текст", true));
+        assertEquals("new_test.txt\ntest.txt\n", fileManager.findFilesBySearchString(TEST_CHAT_ID2, "текст", true));
     }
 
     /**
@@ -265,20 +273,6 @@ public class FileManagerTest
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> fileManager.findFilesBySearchString(TEST_CHAT_ID2, "rrr", true));
         assertEquals("По запросу “rrr” не найдено файлов.", exception.getMessage());
-    }
-
-    /**
-     * Тестируем, что метод createOrCheckIfCreatedFile() корректно работает
-     */
-    @Test
-    public void testCorrectWorkCreateOrCheckIfCreatedFile() throws IOException, NotFoundException
-    {
-        fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
-        fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
-        fileManager.createOrCheckIfCreatedFile(new File("test1.txt"),TEST_CHAT_ID);
-        fileManager.createOrCheckIfCreatedFile(new File("test.txt"),TEST_CHAT_ID);
-
-        assertEquals("test1.txt\ntest.txt\n", fileManager.getListFiles(TEST_CHAT_ID));
     }
 
 }

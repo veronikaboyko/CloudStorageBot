@@ -2,13 +2,13 @@ package org.example.internal;
 
 
 import javassist.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.io.*;
 
 
@@ -218,6 +218,7 @@ public class FileManager
 
     /**
      * Возвращает все файлы пользователя из его директории
+     *
      * @param chatId Идентификатор пользователя
      * @return массив, содержащий все пользовательские файлы
      * @throws NotFoundException если никаких файлов нет
@@ -244,47 +245,50 @@ public class FileManager
     /**
      * Возвращает список всех файлов пользователя
      *
-     * @param chatId        Идентификатор пользователя
+     * @param chatId Идентификатор пользователя
      * @return Список всех файлов пользователя в виде строки
      * @throws NotFoundException если никаких файлов нет
      */
     public String getListFiles(final String chatId) throws NotFoundException
     {
-        final StringBuilder userFileList = new StringBuilder();
+        List<String> listFiles = new ArrayList<>();
         File[] files = getAllUserFiles(chatId);
         for (File file : files)
         {
             if (file.isFile())
-                userFileList.append(file.getName()).append("\n");
+                listFiles.add(file.getName()+"\n");
         }
-        return userFileList.toString();
+        Collections.sort(listFiles);
+        return StringUtils.join(listFiles,"");
     }
 
 
     /**
      * Возвращает список всех файлов пользователя, найденный по искомой строке
-     * @param chatId Идентификатор пользователя
-     * @param searchString Искомая строка
+     *
+     * @param chatId          Идентификатор пользователя
+     * @param searchString    Искомая строка
      * @param searchInContent флаг, который нужно выставить, чтобы искать в содержимом файла, иначе поиск будет по названию
      * @return Список всех файлов пользователя в виде строки
      * @throws NotFoundException если нет таких файлов
-     * @throws IOException если ошибка во время чтения файла
+     * @throws IOException       если ошибка во время чтения файла
      */
     public String findFilesBySearchString(final String chatId, String searchString, boolean searchInContent) throws NotFoundException, IOException
     {
-        final StringBuilder userFileList = new StringBuilder();
+        List<String> listFiles = new ArrayList<>();
         final boolean searchInName = !searchInContent;
         File[] files = getAllUserFiles(chatId);
         for (File file : files)
         {
             if (file.isFile() && (searchInContent && fileContainsString(file, searchString) || searchInName && file.getName().contains(searchString)))
-                userFileList.append(file.getName()).append("\n");
+                listFiles.add(file.getName() + "\n");
         }
-        if (userFileList.isEmpty())
+        if (listFiles.isEmpty())
         {
             throw new NotFoundException("По запросу “%s” не найдено файлов.".formatted(searchString));
         }
-        return userFileList.toString();
+        Collections.sort(listFiles);
+        return StringUtils.join(listFiles,"");
     }
 
 

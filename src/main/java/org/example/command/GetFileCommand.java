@@ -1,8 +1,6 @@
 package org.example.command;
 
 import javassist.NotFoundException;
-import org.example.bot.user.StringMessage;
-import org.example.bot.user.UserMessage;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
@@ -10,6 +8,7 @@ import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,11 +27,11 @@ public class GetFileCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(UserMessage<?> messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        if (!(messageFromUser instanceof StringMessage))
+        if (!(messageFromUser.hasText()))
             return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
-        final String stringContent = ((StringMessage) messageFromUser).getContent();
+        final String stringContent = messageFromUser.getText();
         String[] arguments = getSplitArguments(stringContent);
 
         if (!checkArgumentsCount(2, arguments))

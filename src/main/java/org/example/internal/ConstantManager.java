@@ -58,6 +58,10 @@ public class ConstantManager
     public static final String FILE_SIZE_OVERFLOW = "Размер файла превышает 1МБ.";
 
     public static final String NO_SEARCH_STRING = "В качестве параметра введите искомую строку.";
+    /**
+     * Один мегабайт
+     */
+    public static final int ONE_MB = 1048576;
 
     public static final String SEND_FILE = "Отправьте файл с расширением .txt, .json или .xml";
     public static final String NOT_SUPPORT_FILE_FORMAT = "В этой команде не поддерживается формат отправки файлов.";
