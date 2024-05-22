@@ -92,8 +92,7 @@ public class MessageHandler
                 final AbstractCommand command = userCommandState.getCurrentCommand(chatId);
                 if (command == null)
                     return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
-                final State currentUserState = userCommandState.getCurrentState(chatId);
-                CommandResult result = command.handle(messageFromUser, chatId, currentUserState);
+                CommandResult result = command.handle(messageFromUser, chatId, userCommandState.getCurrentState(chatId));
                 if (result.success())
                     userCommandState.updateCommandState(chatId);
                 else

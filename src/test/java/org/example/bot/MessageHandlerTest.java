@@ -1,6 +1,7 @@
 package org.example.bot;
 
 
+import javassist.NotFoundException;
 import org.example.internal.FileManager;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,8 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class MessageHandlerTest
 {
@@ -333,6 +333,22 @@ public class MessageHandlerTest
         userMessage.setText("/findFile мемеме");
         final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals("По запросу “мемеме” не найдено файлов.", sendMessage.getText());
+    }
+
+    /**
+     * Тестирует команду /sendFile (разные проверки ввода некорректных данных)
+     */
+    @Test
+    public void testSendFileCorrectAnswer() throws IOException, NotFoundException
+    {
+        userMessage.setText("/sendFile wl123");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("Переданы лишние аргументы.", sendMessage.getText());
+        userMessage.setText("/sendFile");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("123");
+        final SendMessage sendMessage1 = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("Отправьте файл с расширением .txt, .json или .xml", sendMessage1.getText());
     }
 
 }

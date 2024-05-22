@@ -1,5 +1,6 @@
 package org.example.bot;
 
+import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -25,7 +26,7 @@ public class TelegramBot extends TelegramLongPollingBot
     {
         super(botToken);
         this.botUsername = botUsername;
-        this.messageHandler = new MessageHandler(new FileManager(),this);
+        this.messageHandler = new MessageHandler(new FileManager(), this);
     }
 
 
@@ -44,6 +45,7 @@ public class TelegramBot extends TelegramLongPollingBot
         PartialBotApiMethod<?> messageToSend = messageHandler.handleUserMessage(messageFromUser, chatId);
         send(messageToSend);
     }
+
     /**
      * Метод для запуска Telegram бота.
      */
@@ -78,20 +80,17 @@ public class TelegramBot extends TelegramLongPollingBot
         }
         catch (TelegramApiException e)
         {
-            if (e.getMessage().equals("Error executing org.telegram.telegrambots.meta.api.methods.send.SendMessage query: [400] Bad Request: message is too long"))
+            assert message instanceof SendMessage;
+            SendMessage answer = (SendMessage) message;
+            answer.setText(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
+            try
             {
-                SendMessage answer = (SendMessage) message;
-                answer.setText("Файл слишком большой для показа.");
-                try
-                {
-                    execute(answer);
-                }
-                catch (TelegramApiException ex)
-                {
-                    System.out.println("Не удалось отправить сообщение. " + ex.getMessage());
-                }
+                execute(answer);
             }
-
+            catch (TelegramApiException ex)
+            {
+                System.out.println("Не удалось отправить сообщение. " + ex.getMessage());
+            }
         }
     }
 }
