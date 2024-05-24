@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,21 +84,17 @@ public class MessageHandler
                     else
                         currentCommand = userCommandState.getCurrentCommand(chatId);
                 }
-                CommandResult result = currentCommand.handle(messageFromUser, chatId, userCommandState.getCurrentState(chatId));
-                if (result.success())
-                    userCommandState.updateCommandState(chatId);
-                return result.getDataForUser();
+//                CommandResult result = currentCommand.handle(messageFromUser, chatId, userCommandState.getCurrentState(chatId));
+//                if (result.success())
+//                    userCommandState.updateCommandState(chatId);
+//                return result.getDataForUser();
+                return sendUserMessageToCommand(messageFromUser, chatId, currentCommand);
             } else
             {
                 final AbstractCommand command = userCommandState.getCurrentCommand(chatId);
                 if (command == null)
                     return new SendMessage(chatId, ConstantManager.NOT_UNDERSTAND);
-                CommandResult result = command.handle(messageFromUser, chatId, userCommandState.getCurrentState(chatId));
-                if (result.success())
-                    userCommandState.updateCommandState(chatId);
-                else
-                    userCommandState.removeUser(chatId);
-                return result.getDataForUser();
+                return sendUserMessageToCommand(messageFromUser, chatId, command);
             }
         }
         catch (Exception exception)
@@ -106,6 +103,18 @@ public class MessageHandler
             exception.printStackTrace();
             return new SendMessage(chatId, "Внутрення ошибка работы бота");
         }
+    }
+
+    /**
+     * Отправляем запрос пользователя соответствующей команде
+     * @return Ответ команды
+     */
+    private PartialBotApiMethod<?> sendUserMessageToCommand(Message messageFromUser,String chatId,AbstractCommand command) throws IOException
+    {
+        CommandResult result = command.handle(messageFromUser, chatId, userCommandState.getCurrentState(chatId));
+        if (result.success())
+            userCommandState.updateCommandState(chatId);
+        return result.getDataForUser();
     }
 
     /**

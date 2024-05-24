@@ -3,6 +3,9 @@ package org.example.internal;
 
 import javassist.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.example.bot.TelegramBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.Document;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -306,6 +309,23 @@ public class FileManager
             throw new NotFoundException(ConstantManager.NO_SUCH_FILE_EXISTS);
         }
         return new File(getFileNameByID(chatId), fileName);
+    }
+
+    /**
+     * Создать файл, присланный пользователем из телеграма
+     */
+    public void createFile(Document userDocument, TelegramBot telegramBot, String chatId) throws Exception
+    {
+        Document document = new Document();
+        final String fileName = userDocument.getFileName();
+        document.setFileName(fileName);
+        document.setFileSize(userDocument.getFileSize());
+        document.setFileId(userDocument.getFileId());
+        GetFile getFile = new GetFile();
+        getFile.setFileId(document.getFileId());
+        createUserDir(chatId);
+        org.telegram.telegrambots.meta.api.objects.File file = telegramBot.execute(getFile);
+        telegramBot.downloadFile(file, new File(String.valueOf(getPathToFile(chatId, fileName))));
     }
 }
 

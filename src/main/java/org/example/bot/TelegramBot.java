@@ -80,17 +80,8 @@ public class TelegramBot extends TelegramLongPollingBot
         }
         catch (TelegramApiException e)
         {
-            assert message instanceof SendMessage;
-            SendMessage answer = (SendMessage) message;
-            answer.setText(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
-            try
-            {
-                execute(answer);
-            }
-            catch (TelegramApiException ex)
-            {
-                System.out.println("Не удалось отправить сообщение. " + ex.getMessage());
-            }
+            System.err.println("Не удалось отправить сообщение. ");
+            e.printStackTrace();
         }
     }
 }
