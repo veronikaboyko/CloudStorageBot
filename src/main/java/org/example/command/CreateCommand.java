@@ -5,6 +5,7 @@ import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -22,9 +23,12 @@ public class CreateCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser.hasText()))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = messageFromUser.getText();
+        String[] arguments = getSplitArguments(stringContent);
 
         if (!checkArgumentsCount(2, arguments))
         {
@@ -50,7 +54,7 @@ public class CreateCommand extends AbstractCommand
                 case ConstantManager.ALLOWED_EXTENSIONS_MISTAKE ->
                 {
                     return new CommandResult(new SendMessage(chatId, "Не удалось создать файл %s. ".formatted(fileName)
-                            + "Неверное расширение файла. " + "Допустимые расширения: txt, json, xml."), true);
+                            + ConstantManager.ALLOWED_EXTENSIONS_MISTAKE), true);
                 }
                 default ->
                         throw new IOException("Не удалось создать файл %s. ".formatted(fileName) + e.getMessage(), e);

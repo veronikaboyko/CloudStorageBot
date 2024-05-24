@@ -1,26 +1,28 @@
 package org.example.command;
 
+import javassist.NotFoundException;
 import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.io.File;
 import java.io.IOException;
 
-import static org.example.state.State.ON_COMMAND_FROM_USER;
-
 /**
- * Команда /delete.
+ * Команда /getFile
  */
-public class DeleteCommand extends AbstractCommand
+public class GetFileCommand extends AbstractCommand
 {
     private final FileManager fileManager;
 
-    public DeleteCommand(FileManager fileManager)
+    public GetFileCommand(FileManager fileManager)
     {
-        super(new StateSwitcher(ON_COMMAND_FROM_USER));
+        super(new StateSwitcher(State.ON_COMMAND_FROM_USER));
         this.fileManager = fileManager;
     }
 
@@ -31,24 +33,22 @@ public class DeleteCommand extends AbstractCommand
             return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
         final String stringContent = messageFromUser.getText();
         String[] arguments = getSplitArguments(stringContent);
+
         if (!checkArgumentsCount(2, arguments))
         {
             return new CommandResult(new SendMessage(chatId, ConstantManager.NO_FILE_NAME_FOUND), true);
         }
-        if (!arguments[0].equals("/delete"))
-            return new CommandResult(new SendMessage(chatId, "Некорректная команда!"), false);
         final String fileName = arguments[1];
         try
         {
-            fileManager.deleteFile(fileName, chatId);
-            return new CommandResult(new SendMessage(chatId, "Файл успешно удален."), true);
+            File fileToSend = fileManager.getFile(fileName, chatId);
+            return new CommandResult(new SendDocument(chatId, new InputFile(fileToSend)), true);
         }
-        catch (IOException e)
-        {
-            if (e.getMessage().equals(ConstantManager.NO_SUCH_FILE_EXISTS))
-                return new CommandResult(new SendMessage(chatId, "Не удалось удалить файл %s. ".formatted(fileName)
-                        + ConstantManager.NO_SUCH_FILE_EXISTS), true);
-            throw new IOException("Не удалось удалить файл %s. ".formatted(fileName) + e.getMessage(), e);
+        catch (NotFoundException e) {
+            return new CommandResult(new SendMessage(chatId, "Не удалось отправить файл %s. ".formatted(fileName)
+                    + ConstantManager.NO_SUCH_FILE_EXISTS), true);
         }
     }
+
+
 }

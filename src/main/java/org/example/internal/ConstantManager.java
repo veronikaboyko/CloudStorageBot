@@ -1,5 +1,7 @@
 package org.example.internal;
 
+import java.util.Set;
+
 /**
  * Хранит в себе константы проекта
  */
@@ -18,7 +20,11 @@ public class ConstantManager
             "/listFiles – Посмотреть список файлов из хранилища\n" +
             "/viewFileContent [File.расширение] - Просмотреть содержимое файла\n" +
             "/editFile [File.расширение] - Редактировать содержимое файла\n" +
-            "/editFileName [File.расширение] - Переименовать файл";
+            "/editFileName [File.расширение] - Переименовать файл\n" +
+            "/getFile [FileName.расширение] - Получить файл\n" +
+            "/findFileName [name] - Просмотреть список файлов, в названии которых встречается [name]\n" +
+            "/findFile [content] - Просмотреть список файлов, в содержании которых есть [content]\n" +
+            "/sendFile - Добавить в хранилище пользовательский файл\n";
     /**
      * Директория, где лежат директории по каждому пользователю
      */
@@ -26,6 +32,7 @@ public class ConstantManager
     /**
      * Для исключений, когда файла с таким названием не существует
      */
+    public static final String NOT_UNDERSTAND = "Не понимаю вас! Вызовите /help для получения справки по боту.";
     public static final String NO_SUCH_FILE_EXISTS = "Файла с таким названием не существует.";
     /**
      * Для исключений, когда некорректно название файла
@@ -50,4 +57,21 @@ public class ConstantManager
      */
     public static final String BOT_BROKEN_INSIDE_MESSAGE = "Внутрення ошибка телеграм-бота." +
             " Если это сообщение возникло, напишите нам на почту: cloud_bot@yandex.ru";
+    public static final String FILE_SIZE_OVERFLOW = "Размер файла превышает 1МБ.";
+
+    public static final String NO_SEARCH_STRING = "В качестве параметра введите искомую строку.";
+    /**
+     * Один мегабайт
+     */
+    public static final int ONE_MB = 1048576;
+    public static final int MAX_TELEGRAM_MESSAGE_SIZE = 4095;
+
+    /**
+     * Допустимые расширения
+     */
+    public static final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
+
+    public static final String SEND_FILE = "Отправьте файл с расширением .txt, .json или .xml";
+    public static final String NOT_SUPPORT_FILE_FORMAT = "В этой команде не поддерживается формат отправки файлов.";
+
 }

@@ -1,10 +1,11 @@
 package org.example.command;
 
-import org.example.internal.ConstantManager;
+import javassist.NotFoundException;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -22,18 +23,13 @@ public class ListFilesCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        try
-        {
+        try {
             String listFiles = fileManager.getListFiles(chatId);
             return new CommandResult(new SendMessage(chatId, "Список ваших файлов:\n" + listFiles), true);
-        }
-        catch (IOException e)
-        {
-            if (e.getMessage().equals(ConstantManager.NO_USER_FILES_FOUND))
-                return new CommandResult(new SendMessage(chatId, "У вас пока еще нет файлов!"), true);
-            throw new IOException("Не удалось получить список файлов. " + e.getMessage(), e);
+        } catch (NotFoundException e) {
+            return new CommandResult(new SendMessage(chatId, e.getMessage()), true);
         }
     }
 }

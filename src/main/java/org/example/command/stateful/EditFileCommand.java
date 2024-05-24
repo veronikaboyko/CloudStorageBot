@@ -7,9 +7,9 @@ import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 
 /**
  * Команда /editFile
@@ -26,9 +26,12 @@ public class EditFileCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser.hasText()))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = messageFromUser.getText();
+        String[] arguments = getSplitArguments(stringContent);
         switch (state)
         {
             case ON_COMMAND_FROM_USER ->
@@ -57,7 +60,7 @@ public class EditFileCommand extends AbstractCommand
                 final String fileToEdit = fileNamesCasher.getData(chatId);
                 try
                 {
-                    fileManager.editFile(fileToEdit, chatId, messageFromUser);
+                    fileManager.editFile(fileToEdit, chatId, stringContent);
                     fileNamesCasher.clearUserCash(chatId);
                     return new CommandResult(new SendMessage(chatId, "Файл %s успешно сохранен.".formatted(fileToEdit)), true);
                 }
@@ -68,6 +71,5 @@ public class EditFileCommand extends AbstractCommand
             }
             default -> throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
         }
-
     }
 }

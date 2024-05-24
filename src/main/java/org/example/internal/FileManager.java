@@ -1,25 +1,35 @@
 package org.example.internal;
 
 
+import javassist.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
+import org.example.bot.TelegramBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.Document;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+import java.io.*;
+
 
 /**
  * Класс, который отвечает за операции с файлами пользователя.
  */
 public class FileManager
 {
-    private final Set<String> ALLOWED_EXTENSIONS = Set.of(".txt", ".json", ".xml");
     private String directoryToWork = ConstantManager.USER_DATA_DIRECTORY; //по умолчанию
+
     public FileManager(String directoryToWork)
     {
         this.directoryToWork = directoryToWork;
     }
-    public FileManager(){}
+
+    public FileManager()
+    {
+    }
 
     /**
      * Метод для создания директории пользователя, в которой будут храниться его личные файлы.
@@ -92,6 +102,7 @@ public class FileManager
         Files.delete(filePath);
     }
 
+
     /**
      * Переписываем содержимое файла
      */
@@ -138,7 +149,7 @@ public class FileManager
     public boolean isValidFileName(String fileName)
     {
         String fileExtension = getFileExtension(fileName);
-        return ALLOWED_EXTENSIONS.contains(fileExtension);
+        return ConstantManager.ALLOWED_EXTENSIONS.contains(fileExtension);
     }
 
     /**
@@ -188,35 +199,133 @@ public class FileManager
         return fileName.substring(dotIndex);
     }
 
+
     /**
-     * Возвращает список файлов пользователя
+     * Возвращает все файлы пользователя из его директории
+     *
+     * @param chatId Идентификатор пользователя
+     * @return массив, содержащий все пользовательские файлы
+     * @throws NotFoundException если никаких файлов нет
+     */
+    private File[] getAllUserFiles(final String chatId) throws NotFoundException
+    {
+        File currentUserDirectory = new File(getFileNameByID(chatId));
+        File[] files;
+        if (currentUserDirectory.isDirectory())
+        {
+            files = currentUserDirectory.listFiles();
+            if (files == null)
+            {
+                throw new NotFoundException(ConstantManager.NO_USER_FILES_FOUND);
+            }
+            return files;
+        } else
+        {
+            throw new NotFoundException(ConstantManager.NO_USER_FILES_FOUND);
+        }
+    }
+
+
+    /**
+     * Возвращает список всех файлов пользователя
      *
      * @param chatId Идентификатор пользователя
      * @return Список всех файлов пользователя в виде строки
+     * @throws NotFoundException если никаких файлов нет
      */
-    public String getListFiles(final String chatId) throws IOException
+    public String getListFiles(final String chatId) throws NotFoundException
     {
-        final StringBuilder userFileList = new StringBuilder();
-        File currentUserDirectory = new File(getFileNameByID(chatId));
-        if (currentUserDirectory.isDirectory())
+        List<String> listFiles = new ArrayList<>();
+        File[] files = getAllUserFiles(chatId);
+        for (File file : files)
         {
-            File[] files = currentUserDirectory.listFiles();
-            if (files == null)
-            {
-                throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
-            }
-            for (File file : files)
-            {
-                if (file.isFile())
-                {
-                    userFileList.append(file.getName()).append("\n");
-                }
-            }
-            return userFileList.toString();
-        } else
-        {
-            throw new IOException(ConstantManager.NO_USER_FILES_FOUND);
+            if (file.isFile())
+                listFiles.add(file.getName() + "\n");
         }
+        Collections.sort(listFiles);
+        return StringUtils.join(listFiles, "");
+    }
+
+
+    /**
+     * Возвращает список всех файлов пользователя, найденный по искомой строке
+     *
+     * @param chatId          Идентификатор пользователя
+     * @param searchString    Искомая строка
+     * @param searchInContent флаг, который нужно выставить, чтобы искать в содержимом файла, иначе поиск будет по названию
+     * @return Список всех файлов пользователя в виде строки
+     * @throws NotFoundException если нет таких файлов
+     * @throws IOException       если ошибка во время чтения файла
+     */
+    public String findFilesBySearchString(final String chatId, String searchString, boolean searchInContent) throws NotFoundException, IOException
+    {
+        List<String> listFiles = new ArrayList<>();
+        final boolean searchInName = !searchInContent;
+        File[] files = getAllUserFiles(chatId);
+        for (File file : files)
+        {
+            if (file.isFile() && (searchInContent && fileContainsString(file, searchString) || searchInName && file.getName().contains(searchString)))
+                listFiles.add(file.getName() + "\n");
+        }
+        if (listFiles.isEmpty())
+        {
+            throw new NotFoundException("По запросу “%s” не найдено файлов.".formatted(searchString));
+        }
+        Collections.sort(listFiles);
+        return StringUtils.join(listFiles, "");
+    }
+
+
+    /**
+     * Проверяет, содержит ли файл искомую строку
+     *
+     * @param file         Файл, содержимое которого проверяется
+     * @param searchString Искомая строка
+     * @return true, если содержит, иначе false
+     * @throws IOException если ошибка во время чтения файла
+     */
+    private boolean fileContainsString(File file, String searchString) throws IOException
+    {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+        {
+            return reader.lines().anyMatch(line -> line.contains(searchString));
+        }
+    }
+
+
+    /**
+     * Получить файл
+     *
+     * @param fileName Имя файла, который нужно получить
+     * @param chatId   Идентификатор пользователя
+     * @return Нужный файл
+     * @throws NotFoundException если нет такого файла
+     */
+    public File getFile(String fileName, String chatId) throws NotFoundException
+    {
+        Path filePath = getPathToFile(chatId, fileName);
+        if (!Files.exists(filePath))
+        {
+            throw new NotFoundException(ConstantManager.NO_SUCH_FILE_EXISTS);
+        }
+        return new File(getFileNameByID(chatId), fileName);
+    }
+
+    /**
+     * Создать файл, присланный пользователем из телеграма
+     */
+    public void createFile(Document userDocument, TelegramBot telegramBot, String chatId) throws Exception
+    {
+        Document document = new Document();
+        final String fileName = userDocument.getFileName();
+        document.setFileName(fileName);
+        document.setFileSize(userDocument.getFileSize());
+        document.setFileId(userDocument.getFileId());
+        GetFile getFile = new GetFile();
+        getFile.setFileId(document.getFileId());
+        createUserDir(chatId);
+        org.telegram.telegrambots.meta.api.objects.File file = telegramBot.execute(getFile);
+        telegramBot.downloadFile(file, new File(String.valueOf(getPathToFile(chatId, fileName))));
     }
 }
 

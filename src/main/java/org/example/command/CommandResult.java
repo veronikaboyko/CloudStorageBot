@@ -1,31 +1,37 @@
 package org.example.command;
 
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 
 /**
  * Результат работы команды.
  * Представляет пару:
  * dataForUser - BotApiMethod<?> - сообщение/файл для пользователя
- * canUpdate - boolean - можно ли команде переходить в следующее состояние
+ * success - Команда отработала успешно
  */
 public class CommandResult
 {
-    private final BotApiMethod<?> dataForUser;
-    private final boolean canUpdate;
+    private final PartialBotApiMethod<?> dataForUser;
+    private final boolean success;
 
-    public CommandResult(BotApiMethod<?> dataForUser, boolean canUpdate)
+    public CommandResult(PartialBotApiMethod<?> dataForUser, boolean success)
     {
         this.dataForUser = dataForUser;
-        this.canUpdate = canUpdate;
+        this.success = success;
     }
 
-    public BotApiMethod<?> getDataForUser()
+    /**
+     * @return данные от команды пользователю
+     */
+    public PartialBotApiMethod<?> getDataForUser()
     {
         return dataForUser;
     }
 
-    public boolean canUpdate()
+    /**
+     * @return Успешно ли отработала команда
+     */
+    public boolean success()
     {
-        return canUpdate;
+        return success;
     }
 }

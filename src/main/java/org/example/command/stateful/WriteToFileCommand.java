@@ -7,6 +7,7 @@ import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -26,9 +27,12 @@ public class WriteToFileCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser.hasText()))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = messageFromUser.getText();
+        String[] arguments = getSplitArguments(stringContent);
         switch (state)
         {
             case ON_COMMAND_FROM_USER ->
@@ -56,7 +60,7 @@ public class WriteToFileCommand extends AbstractCommand
                 final String fileToWrite = fileNamesCasher.getData(chatId);
                 try
                 {
-                    fileManager.writeToFile(fileToWrite, chatId, messageFromUser);
+                    fileManager.writeToFile(fileToWrite, chatId, stringContent);
                     fileNamesCasher.clearUserCash(chatId);
                     return new CommandResult(new SendMessage(chatId, "Файл %s успешно сохранен.".formatted(fileToWrite)),true);
                 }

@@ -8,6 +8,7 @@ import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.IOException;
 
@@ -28,9 +29,12 @@ public class EditFileNameCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser.hasText()))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = messageFromUser.getText();
+        String[] arguments = getSplitArguments(stringContent);
         switch (state)
         {
             case ON_COMMAND_FROM_USER ->
@@ -55,14 +59,14 @@ public class EditFileNameCommand extends AbstractCommand
             }
             case ON_DATA_FROM_USER ->
             {
-                if (!fileManager.isValidFileName(messageFromUser))
+                if (!fileManager.isValidFileName(stringContent))
                 {
                     return new CommandResult(new SendMessage(chatId,"Некорректное название файла."), false);
                 }
                 final String oldFileName = fileNamesCasher.getData(chatId);
                 try
                 {
-                    fileManager.editFileName(oldFileName, chatId, messageFromUser);
+                    fileManager.editFileName(oldFileName, chatId, stringContent);
                     fileNamesCasher.clearUserCash(chatId);
                     return new CommandResult(new SendMessage(chatId, oldFileName + " -> " + messageFromUser), true);
                 }

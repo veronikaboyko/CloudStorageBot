@@ -4,7 +4,6 @@ import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -26,9 +25,12 @@ public class ViewFileContentCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult handle(String messageFromUser, String chatId, State state) throws IOException
+    public CommandResult handle(Message messageFromUser, String chatId, State state) throws IOException
     {
-        String[] arguments = getSplitArguments(messageFromUser);
+        if (!(messageFromUser.hasText()))
+            return new CommandResult(new SendMessage(chatId, ConstantManager.NOT_SUPPORT_FILE_FORMAT), false);
+        final String stringContent = messageFromUser.getText();
+        String[] arguments = getSplitArguments(stringContent);
         if (!checkArgumentsCount(2, arguments))
         {
             return new CommandResult(new SendMessage(chatId, ConstantManager.NO_FILE_NAME_FOUND), true);
@@ -47,6 +49,8 @@ public class ViewFileContentCommand extends AbstractCommand
         try
         {
             final String fileContent = fileManager.getFileContent(fileName, chatId);
+            if (fileContent.length() > ConstantManager.MAX_TELEGRAM_MESSAGE_SIZE)
+                return new CommandResult(new SendMessage(chatId, "Файл слишком велик."), true);
             if (!fileContent.isEmpty())
                 return new CommandResult(new SendMessage(chatId, fileContent), true);
             else

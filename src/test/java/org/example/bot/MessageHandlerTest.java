@@ -1,22 +1,25 @@
 package org.example.bot;
 
+
+import javassist.NotFoundException;
 import org.example.internal.FileManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class MessageHandlerTest
 {
     private MessageHandler messageHandler;
     private final String TEST_CHAT_ID = "1_";
+    private Message userMessage;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -26,8 +29,10 @@ public class MessageHandlerTest
     {
         File directoryForTempFiles = temporaryFolder.newFolder("forTesting");
         messageHandler = new MessageHandler(
-                new FileManager(directoryForTempFiles.getAbsolutePath() + "/")
+                new FileManager(directoryForTempFiles.getAbsolutePath() + "/"),
+                null
         );
+        userMessage = new Message();
     }
 
     /**
@@ -37,15 +42,20 @@ public class MessageHandlerTest
     public void testHandleCreateDeleteListCommand()
     {
         final String file = "file.txt";
-        SendMessage createMessage = (SendMessage) messageHandler.handleUserMessage("/create %s".formatted(file), TEST_CHAT_ID);
+        userMessage.setText("/create %s".formatted(file));
+        SendMessage createMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файл %s успешно создан.".formatted(file)), createMessage);
-        SendMessage listFiles = (SendMessage) messageHandler.handleUserMessage("/listFiles", TEST_CHAT_ID);
+        userMessage.setText("/listFiles");
+        SendMessage listFiles = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Список ваших файлов:\n%s\n".formatted(file)), listFiles);
-        SendMessage delMessage = (SendMessage) messageHandler.handleUserMessage("/delete %s".formatted(file), TEST_CHAT_ID);
+        userMessage.setText("/delete %s".formatted(file));
+        SendMessage delMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файл успешно удален."), delMessage);
-        listFiles = (SendMessage) messageHandler.handleUserMessage("/listFiles", TEST_CHAT_ID);
+        userMessage.setText("/listFiles");
+        listFiles = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Список ваших файлов:\n"), listFiles);
-        messageHandler.handleUserMessage("/delete %s".formatted(file), TEST_CHAT_ID);
+        userMessage.setText("/delete %s".formatted(file));
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -55,11 +65,13 @@ public class MessageHandlerTest
     public void testHandleCreateCommandWrongExtension()
     {
         String testingFile = "file.txtt";
-        SendMessage createMessage = (SendMessage) messageHandler.handleUserMessage("/create %s".formatted(testingFile), TEST_CHAT_ID);
+        userMessage.setText("/create %s".formatted(testingFile));
+        SendMessage createMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Не удалось создать файл %s.".formatted(testingFile)
                 + " Неверное расширение файла. Допустимые расширения: txt, json, xml."), createMessage);
         //Если же все-таки создался обязательно удаляем.
-        messageHandler.handleUserMessage("/delete %s".formatted("file.txt"), TEST_CHAT_ID);
+        userMessage.setText("/delete %s".formatted("file.txt"));
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -68,11 +80,14 @@ public class MessageHandlerTest
     @Test
     public void testHandleCreateCommandAlreadyExist()
     {
-        messageHandler.handleUserMessage("/create ff.txt", TEST_CHAT_ID);
-        SendMessage secondCreateMessage = (SendMessage) messageHandler.handleUserMessage("/create ff.txt", TEST_CHAT_ID);
+        userMessage.setText("/create ff.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/create ff.txt");
+        SendMessage secondCreateMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Не удалось создать файл %s.".formatted("ff.txt")
                 + " Файл с таким именем уже существует."), secondCreateMessage);
-        messageHandler.handleUserMessage("/delete ff.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete ff.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -81,13 +96,15 @@ public class MessageHandlerTest
     @Test
     public void testHandleDeleteCommandNotExist()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
-        SendMessage secondDeleteMessage = (SendMessage) messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        SendMessage secondDeleteMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Не удалось удалить файл %s.".formatted("f.txt")
                 + " Файла с таким названием не существует."), secondDeleteMessage);
         //вруг при создании возникли ошибки
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -96,13 +113,19 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileNameCommandChange()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/editFileName f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("f2.txt", TEST_CHAT_ID);
-        SendMessage listFiles = (SendMessage) messageHandler.handleUserMessage("/listFiles", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/editFileName f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("f2.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/listFiles");
+        SendMessage listFiles = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Список ваших файлов:\nf2.txt\n"), listFiles);
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID); //вдруг при создании f.txt возникли ошибки
-        messageHandler.handleUserMessage("/delete f2.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID); //вдруг при создании f.txt возникли ошибки
+        userMessage.setText("/delete f2.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -111,11 +134,15 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileNameCommandNotCorrect()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/editFileName f.txt", TEST_CHAT_ID);
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("f2.txtt", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/editFileName f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("f2.txtt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Некорректное название файла."), sendMessage);
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -124,7 +151,8 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileNameCommandNotExistingFile()
     {
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/editFileName f.txt", TEST_CHAT_ID);
+        userMessage.setText("/editFileName f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует."), sendMessage);
     }
 
@@ -134,12 +162,17 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileCommandChange()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/editFile f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("Some information", TEST_CHAT_ID);
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/viewFileContent f.txt", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/editFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("Some information");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/viewFileContent f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals("Some information\n", sendMessage.getText());
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -148,7 +181,8 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileCommandNotCorrectName()
     {
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/editFile f.txt", TEST_CHAT_ID);
+        userMessage.setText("/editFile f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует."), sendMessage);
     }
 
@@ -158,11 +192,15 @@ public class MessageHandlerTest
     @Test
     public void testHandleEditFileCommandTestInputAnotherCommand()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/editFile f.txt", TEST_CHAT_ID);
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/listFiles", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/editFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/listFiles");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertNotEquals("Some information\n", sendMessage.getText());
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -171,14 +209,21 @@ public class MessageHandlerTest
     @Test
     public void testHandleWriteToFileTestInputSaved()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("1", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("2", TEST_CHAT_ID);
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/viewFileContent f.txt", TEST_CHAT_ID);
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("1");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("2");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/viewFileContent f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals("12\n", sendMessage.getText());
-        messageHandler.handleUserMessage("/delete f.txt", TEST_CHAT_ID);
+        userMessage.setText("/delete f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
     }
 
     /**
@@ -187,7 +232,8 @@ public class MessageHandlerTest
     @Test
     public void testHandleWriteToFileTestIncorrectInputFIle()
     {
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файл с таким именем не найден."), sendMessage);
     }
 
@@ -197,7 +243,8 @@ public class MessageHandlerTest
     @Test
     public void testHandleViewFileContentTestIncorrectInputFIle()
     {
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/viewFileContent f.txt", TEST_CHAT_ID);
+        userMessage.setText("/viewFileContent f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals(new SendMessage(TEST_CHAT_ID, "Файла с таким названием не существует."), sendMessage);
     }
 
@@ -207,13 +254,101 @@ public class MessageHandlerTest
     @Test
     public void testHandleViewFileContentTestСorrectFileInside()
     {
-        messageHandler.handleUserMessage("/create f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/writeToFile f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("1", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("/editFile f.txt", TEST_CHAT_ID);
-        messageHandler.handleUserMessage("2", TEST_CHAT_ID);
-        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage("/viewFileContent f.txt", TEST_CHAT_ID);
+
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("1");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/editFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("2");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/viewFileContent f.txt");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
         assertEquals("2\n", sendMessage.getText());
+    }
+
+    /**
+     * Тест команды /findFileName (поиск подстроки в именах файлов)
+     */
+    @Test
+    public void testHandleFindFileName()
+    {
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/create t.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/findFileName f");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("По запросу “f” найдены следующие файлы:\nf.txt\n", sendMessage.getText());
+    }
+
+    /**
+     * Тест команды /findFileName (не найдено таких файлов)
+     */
+    @Test
+    public void testHandleFindFileNameNotFound()
+    {
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/create t.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/findFileName r");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("По запросу “r” не найдено файлов.", sendMessage.getText());
+    }
+
+
+    /**
+     * Тест команды /findFile (поиск подстроки в содержимом файлов)
+     */
+    @Test
+    public void testHandleFindFile()
+    {
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("какой-то текст");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/findFile -то текст");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("По запросу “-то текст” найдены следующие файлы:\nf.txt\n", sendMessage.getText());
+    }
+
+    /**
+     * Тест команды /findFile (не найдено таких файлов)
+     */
+    @Test
+    public void testHandleFindFileNotFound()
+    {
+        userMessage.setText("/create f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/writeToFile f.txt");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("какой-то текст");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("/findFile мемеме");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("По запросу “мемеме” не найдено файлов.", sendMessage.getText());
+    }
+
+    /**
+     * Тестирует команду /sendFile (разные проверки ввода некорректных данных)
+     */
+    @Test
+    public void testSendFileCorrectAnswer() throws IOException, NotFoundException
+    {
+        userMessage.setText("/sendFile wl123");
+        final SendMessage sendMessage = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("Переданы лишние аргументы.", sendMessage.getText());
+        userMessage.setText("/sendFile");
+        messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        userMessage.setText("123");
+        final SendMessage sendMessage1 = (SendMessage) messageHandler.handleUserMessage(userMessage, TEST_CHAT_ID);
+        assertEquals("Отправьте файл с расширением .txt, .json или .xml", sendMessage1.getText());
     }
 
 }
