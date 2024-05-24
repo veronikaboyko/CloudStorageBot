@@ -7,15 +7,11 @@ import org.example.internal.ConstantManager;
 import org.example.internal.FileManager;
 import org.example.state.State;
 import org.example.state.StateSwitcher;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * Команда /sendFile
@@ -58,29 +54,18 @@ public class SendFileCommand extends AbstractCommand
                 final Document userDocument = messageFromUser.getDocument();
                 if (userDocument.getFileSize() / ConstantManager.ONE_MB > 1)
                     return new CommandResult(new SendMessage(chatId, ConstantManager.FILE_SIZE_OVERFLOW), false);
-                File systemFile;
-                Document document = new Document();
                 final String fileName = userDocument.getFileName();
                 if (!ConstantManager.ALLOWED_EXTENSIONS.contains("."+fileName.split("\\.")[1]))
+                {
                     return new CommandResult(new SendMessage(chatId, ConstantManager.ALLOWED_EXTENSIONS_MISTAKE), false);
-                document.setFileName(fileName);
-                document.setFileSize(userDocument.getFileSize());
-                document.setFileId(userDocument.getFileId());
-                GetFile getFile = new GetFile();
-                getFile.setFileId(document.getFileId());
+                }
                 try
                 {
-                    org.telegram.telegrambots.meta.api.objects.File file = telegramBot.execute(getFile);
-                    systemFile = new File(ConstantManager.USER_DATA_DIRECTORY + "user_" + chatId + "/" + userDocument.getFileName());
-                    telegramBot.downloadFile(file, systemFile);
-                    if (Files.exists(systemFile.toPath()))
-                        return new CommandResult(new SendMessage(chatId, "Файл успешно сохранен."), true);
-                    else
-                        return new CommandResult(new SendMessage(chatId, "Ошибка сохранения файла. Попробуйте отправить еще раз."), true);
+                    fileManager.createFile(userDocument,telegramBot,chatId);
+                    return new CommandResult(new SendMessage(chatId, "Файл успешно сохранен."), true);
                 }
-                catch (TelegramApiException e)
+                catch (Exception e)
                 {
-                    e.printStackTrace();
                     throw new IOException(ConstantManager.BOT_BROKEN_INSIDE_MESSAGE);
                 }
             }
